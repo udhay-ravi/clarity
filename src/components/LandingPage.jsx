@@ -42,13 +42,16 @@ export default function LandingPage({ onGetStarted }) {
         </div>
 
         <h1 className="font-[var(--font-body)] text-5xl sm:text-6xl font-bold tracking-tight text-text leading-[1.1] mb-6">
-          Write PM docs that{' '}
-          <span className="text-amber">actually ship</span>
+          Think Sharper.{' '}
+          <span className="text-amber">Write Clearer.</span>
         </h1>
 
-        <p className="font-[var(--font-ui)] text-lg text-ghost max-w-xl mx-auto leading-relaxed mb-10">
-          Structured templates, real-time coaching nudges, and AI feedback —
-          so every PRD, one-pager, and strategy doc is clear, complete, and convincing.
+        <p className="font-[var(--font-ui)] text-lg text-ghost max-w-xl mx-auto leading-relaxed mb-4">
+          Other AI tools write for you. Clarity makes you think.
+        </p>
+
+        <p className="font-[var(--font-ui)] text-sm text-ghost/70 max-w-md mx-auto leading-relaxed mb-10">
+          Built for Product Managers.
         </p>
 
         <div className="flex items-center justify-center gap-4">
