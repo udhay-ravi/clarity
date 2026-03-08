@@ -46,11 +46,11 @@ export default function LandingPage({ onGetStarted }) {
           <span className="text-amber">Write Clearer.</span>
         </h1>
 
-        <p className="font-[var(--font-ui)] text-lg text-ghost max-w-xl mx-auto leading-relaxed mb-4">
+        <p className="font-[var(--font-ui)] text-lg text-text/70 max-w-xl mx-auto leading-relaxed mb-4">
           Other AI tools write for you. Clarity makes you think.
         </p>
 
-        <p className="font-[var(--font-ui)] text-sm text-ghost/70 max-w-md mx-auto leading-relaxed mb-10">
+        <p className="font-[var(--font-ui)] text-sm text-text/50 max-w-md mx-auto leading-relaxed mb-10">
           Built for Product Managers.
         </p>
 
