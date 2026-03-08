@@ -3,6 +3,7 @@ import WelcomeScreen from './components/WelcomeScreen';
 import PrefaceScreen from './components/PrefaceScreen';
 import DocumentEditor from './components/DocumentEditor';
 import DocumentLibrary from './components/DocumentLibrary';
+import SettingsModal from './components/SettingsModal';
 import { useCoaching } from './hooks/useCoaching';
 import { useReadability } from './hooks/useReadability';
 import { createDocumentFromTemplate, createBlankDocument } from './lib/templates';
@@ -15,6 +16,8 @@ import {
   createNewDocument,
   setActiveDocId,
 } from './lib/storage';
+import { getProvider } from './lib/ai-provider';
+import { autoStartOllama } from './lib/ollama';
 import { exportToPdf } from './lib/exportPdf';
 import { exportToDocx } from './lib/exportDocx';
 
@@ -60,6 +63,9 @@ export default function App() {
   const [saveStatus, setSaveStatus] = useState(null);
   const [docsIndex, setDocsIndex] = useState(null);
   const [pendingTemplate, setPendingTemplate] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const handleOpenSettings = useCallback(() => setShowSettings(true), []);
+  const handleCloseSettings = useCallback(() => setShowSettings(false), []);
   const { nudges, evaluate, dismissNudge, trackSectionVisit, clearSectionTimer } = useCoaching();
   const { grade: readabilityGrade, feedback: readabilityFeedback, compute: computeReadability } = useReadability();
   const autoSaveTimer = useRef(null);
@@ -77,6 +83,11 @@ export default function App() {
       setScreen('library');
     } else {
       setScreen('welcome');
+    }
+
+    // Auto-start Ollama server in Electron if provider is 'ollama'
+    if (getProvider() === 'ollama' && typeof window !== 'undefined' && window.isElectron) {
+      autoStartOllama().catch((err) => console.warn('Ollama auto-start failed:', err.message));
     }
   }, []);
 
@@ -287,19 +298,30 @@ export default function App() {
   // ---------------------------------------------------------------------------
   if (screen === 'loading') return null;
 
+  const settingsOverlay = showSettings ? <SettingsModal onClose={handleCloseSettings} /> : null;
+
   if (screen === 'library') {
     return (
-      <DocumentLibrary
-        docs={docsIndex?.docs || []}
-        onOpenDoc={handleOpenDoc}
-        onNewDoc={handleNewDocFromLibrary}
-        onDeleteDoc={handleDeleteDoc}
-      />
+      <>
+        <DocumentLibrary
+          docs={docsIndex?.docs || []}
+          onOpenDoc={handleOpenDoc}
+          onNewDoc={handleNewDocFromLibrary}
+          onDeleteDoc={handleDeleteDoc}
+          onOpenSettings={handleOpenSettings}
+        />
+        {settingsOverlay}
+      </>
     );
   }
 
   if (screen === 'welcome') {
-    return <WelcomeScreen onStart={handleStart} />;
+    return (
+      <>
+        <WelcomeScreen onStart={handleStart} onOpenSettings={handleOpenSettings} />
+        {settingsOverlay}
+      </>
+    );
   }
 
   if (screen === 'preface' && pendingTemplate) {
@@ -314,22 +336,26 @@ export default function App() {
 
   if (screen === 'editor' && document) {
     return (
-      <DocumentEditor
-        document={document}
-        onDocumentChange={handleDocumentChange}
-        nudges={nudges}
-        onDismissNudge={dismissNudge}
-        onSectionFocus={handleSectionFocus}
-        onExportMarkdown={handleExportMarkdown}
-        onExportPdf={handleExportPdf}
-        onExportDocx={handleExportDocx}
-        onExportAll={handleExportAll}
-        onNewDoc={handleNewDoc}
-        onGoToLibrary={handleGoToLibrary}
-        saveStatus={saveStatus}
-        readabilityGrade={readabilityGrade}
-        readabilityFeedback={readabilityFeedback}
-      />
+      <>
+        <DocumentEditor
+          document={document}
+          onDocumentChange={handleDocumentChange}
+          nudges={nudges}
+          onDismissNudge={dismissNudge}
+          onSectionFocus={handleSectionFocus}
+          onExportMarkdown={handleExportMarkdown}
+          onExportPdf={handleExportPdf}
+          onExportDocx={handleExportDocx}
+          onExportAll={handleExportAll}
+          onNewDoc={handleNewDoc}
+          onGoToLibrary={handleGoToLibrary}
+          onOpenSettings={handleOpenSettings}
+          saveStatus={saveStatus}
+          readabilityGrade={readabilityGrade}
+          readabilityFeedback={readabilityFeedback}
+        />
+        {settingsOverlay}
+      </>
     );
   }
 

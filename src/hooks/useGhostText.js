@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { getGhostText } from '../lib/anthropic';
+import { getGhostText } from '../lib/ai-provider';
 import { getDimensionCoverage } from '../lib/ghostPrompts';
 
 export function useGhostText({ sectionTitle, documentType, prefaceContext = '', debounceMs = 800 }) {

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Trash2, Plus, Loader2, X, Sparkles } from 'lucide-react';
 import { useGhostText } from '../hooks/useGhostText';
 import { getGhostPrompt, getDimensionCoverage, getSectionDimensionCount } from '../lib/ghostPrompts';
-import { getClarityCheck } from '../lib/anthropic';
+import { getClarityCheck, getProvider } from '../lib/ai-provider';
 
 export default function SectionBlock({
   section,
@@ -318,8 +318,8 @@ export default function SectionBlock({
           )}
         </div>
 
-        {/* Clarity Check button — bottom-right, visible on hover */}
-        {hasBody && (
+        {/* Clarity Check button — bottom-right, visible on hover (only when AI is enabled) */}
+        {hasBody && getProvider() !== 'none' && (
           <div
             className={`flex justify-end mt-2 transition-opacity duration-150 ${
               hovered || clarityCheckOpen ? 'opacity-100' : 'opacity-0'
