@@ -1,0 +1,96 @@
+/* ── Bundled Fonts (offline-ready) ── */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./assets/fonts/dm-sans-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./assets/fonts/lora-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('./assets/fonts/lora-italic-latin.woff2') format('woff2');
+}
+
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #FAFAF8;
+  --color-text: #1A1A1A;
+  --color-amber: #D97706;
+  --color-amber-light: #FEF3C7;
+  --color-ghost: #9CA3AF;
+  --color-border: #E5E5E3;
+  --color-sidebar-bg: #F5F5F3;
+  --font-body: 'Lora', serif;
+  --font-ui: 'DM Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[contenteditable] {
+  outline: none;
+}
+
+[contenteditable]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-ghost);
+  pointer-events: none;
+}
+
+::selection {
+  background-color: var(--color-amber-light);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4D4D4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #B0B0B0;
+}
+
+@keyframes nudgeIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-nudge-in {
+  animation: nudgeIn 0.3s ease-out;
+}
+
+@keyframes ghostIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-ghost-in {
+  animation: ghostIn 0.25s ease-out;
+}
