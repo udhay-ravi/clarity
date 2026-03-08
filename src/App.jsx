@@ -80,12 +80,8 @@ export default function App() {
     const index = loadIndex();
     setDocsIndex(index);
 
-    // Check if user has visited before (has docs or has set a provider)
-    const hasVisited = index.docs.length > 0 || localStorage.getItem('clarity-ai-provider');
     if (index.docs.length > 0) {
       setScreen('library');
-    } else if (hasVisited) {
-      setScreen('welcome');
     } else {
       setScreen('landing');
     }
