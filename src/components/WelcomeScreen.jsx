@@ -144,7 +144,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
         {step === 'provider' && !providerChoice && (
           <div className="animate-fade-in">
             <p className="text-center text-sm font-[var(--font-ui)] text-ghost mb-8">
-              How would you like to power AI coaching?
+              How would you like to power AI features?
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -314,7 +314,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
               </label>
             </div>
             <p className="text-sm font-[var(--font-ui)] text-ghost mb-4">
-              Clarity uses Claude to power ghost text and coaching. Enter your API key to get started.
+              Clarity uses Claude to power ghost text and writing assistance. Enter your API key to get started.
             </p>
             <div className="relative">
               <input
