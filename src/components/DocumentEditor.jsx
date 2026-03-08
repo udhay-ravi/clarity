@@ -17,7 +17,10 @@ export default function DocumentEditor({
   onExportAll,
   onNewDoc,
   onGoToLibrary,
+  onGoToLanding,
   onOpenSettings,
+  onSignOut,
+  user,
   saveStatus,
   readabilityGrade,
   readabilityFeedback,
@@ -133,7 +136,10 @@ export default function DocumentEditor({
         onExportAll={onExportAll}
         onNewDoc={onNewDoc}
         onGoToLibrary={onGoToLibrary}
+        onGoToLanding={onGoToLanding}
         onOpenSettings={onOpenSettings}
+        onSignOut={onSignOut}
+        user={user}
         saveStatus={saveStatus}
         readabilityGrade={readabilityGrade}
         readabilityFeedback={readabilityFeedback}

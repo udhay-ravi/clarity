@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FilePlus, Trash2, FileText, Clock, Type, Settings } from 'lucide-react';
+import { PenLine, FilePlus, Trash2, FileText, Clock, Type, Settings } from 'lucide-react';
 
 function formatRelativeDate(ts) {
   if (!ts) return '';
@@ -34,13 +34,25 @@ function typeBadge(type) {
   );
 }
 
-export default function DocumentLibrary({ docs, onOpenDoc, onNewDoc, onDeleteDoc, onOpenSettings }) {
+export default function DocumentLibrary({ docs, onOpenDoc, onNewDoc, onDeleteDoc, onOpenSettings, onGoToLanding }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const sorted = [...docs].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 py-12">
+      {/* Logo */}
+      <div className="w-full max-w-2xl mb-6">
+        <button
+          onClick={onGoToLanding}
+          className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+          title="Back to Home"
+        >
+          <PenLine className="w-5 h-5 text-amber" />
+          <span className="text-sm font-bold font-[var(--font-ui)] text-text tracking-tight">Clarity</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div className="w-full max-w-2xl flex items-center justify-between mb-8">
         <div>

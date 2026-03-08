@@ -196,6 +196,246 @@ const GHOST_PARAGRAPHS = {
     'Owner: [who is responsible for making this change happen].\n' +
     'Success measure: [how you will know the change is working].\n' +
     'Stop doing: [what you will explicitly eliminate].',
+
+  // ─── PRFAQ ───
+  'Headline':
+    '[Product name] [helps / enables / empowers] [target customer] to [key benefit].\n' +
+    'Lead with the customer outcome, not the feature.\n' +
+    'Make it specific enough to be testable — could a customer say "yes, that\'s what I need"?',
+
+  'Subheadline':
+    '[New / redesigned] [product type] [gives / provides / delivers] [target users]\n' +
+    '[specific capability] [so they can / enabling them to] [measurable outcome].',
+
+  'Customer Problem':
+    '[Target customer persona] currently [pain point they experience].\n' +
+    'This happens when [trigger scenario that causes the pain].\n' +
+    'Today, they deal with this by [current workaround], which [why it\'s inadequate].\n' +
+    'The cost: [quantified impact — time, money, missed opportunities, frustration].',
+
+  'Solution':
+    'With [product name], [target user] can now [key action / capability].\n' +
+    'The experience: [what the user sees and does, step by step].\n' +
+    'The result: [concrete outcome — time saved, errors eliminated, revenue gained].\n' +
+    'This is different because [what makes this approach uniquely effective].',
+
+  'Customer Quote':
+    '"Before [product name], we [specific pain — what was broken or slow].\n' +
+    'Now, [specific improvement with numbers — "we reduced X from Y to Z"].\n' +
+    '[Emotional payoff — "my team can finally focus on..." or "I no longer worry about..."]"\n' +
+    '— [Name], [Title], [Company]',
+
+  'How It Works':
+    'Step 1: [First action the customer takes] → [what they get back].\n' +
+    'Step 2: [Next action] → [result or feedback they see].\n' +
+    'Step 3: [Final action] → [the "aha" moment or key outcome].\n' +
+    'Time to value: [how long from sign-up to first meaningful result].',
+
+  'Executive Quote':
+    '"[Statement connecting product to company mission or market opportunity].\n' +
+    '[What customer insight or data drove this decision].\n' +
+    '[How this positions us for the future — market leadership, new segment, platform play]"\n' +
+    '— [Name], [Title (VP/SVP/GM)]',
+
+  'Call to Action':
+    '[Product name] is available [today / starting date] for [which customers / plans].\n' +
+    'To get started: [specific first step — URL, contact, or action].\n' +
+    'Setup time: [how long until they see value].\n' +
+    '[Special offer or incentive for early adopters, if applicable].',
+
+  'Internal FAQ':
+    'Q: Why now — what changed?\nA: [Market signal, customer data, or competitive move that triggered this].\n\n' +
+    'Q: What\'s the total addressable opportunity?\nA: [TAM/SAM with source, or revenue/engagement projection].\n\n' +
+    'Q: What are the key risks?\nA: [Top 2-3 execution or technical risks with mitigations].\n\n' +
+    'Q: What does this cost to build?\nA: [Team size, timeline, infrastructure costs].\n\n' +
+    'Q: What are we NOT doing in order to do this?\nA: [Explicit trade-offs and deprioritized work].',
+
+  'External FAQ':
+    'Q: How is this different from what you already offer?\nA: [Clear differentiation from existing features].\n\n' +
+    'Q: Does this require changes to my setup?\nA: [Migration or integration requirements].\n\n' +
+    'Q: What data do you need?\nA: [Data requirements and privacy considerations].\n\n' +
+    'Q: What does it cost?\nA: [Pricing — included, add-on, or new tier].\n\n' +
+    'Q: Can I try it first?\nA: [Trial, pilot, or sandbox availability].',
+
+  // ─── Pricing Proposal ───
+  'Current State & Problem':
+    'Current model: [pricing structure — flat rate, per seat, tiers, etc.].\n' +
+    'Revenue distribution: [how revenue splits across customer segments].\n' +
+    'The problem: [underpricing power users / losing deals on price / value misalignment].\n' +
+    'Evidence: [win-loss data, customer feedback, usage vs. pricing analysis].',
+
+  'Market & Competitive Pricing':
+    'Direct competitors: [name] charges [model + price] for [comparable value].\n' +
+    'Market trend: the category is moving toward [usage-based / outcome-based / hybrid].\n' +
+    'Our positioning: we\'re currently [cheaper / pricier / misaligned] relative to [our value].\n' +
+    'Opportunity: [specific pricing gap we can exploit].',
+
+  'Proposed Pricing Model':
+    'Tier 1 — [name]: $[price]/mo. Includes [core features]. Target: [persona].\n' +
+    'Tier 2 — [name]: $[price]/mo. Adds [differentiating features]. Target: [persona].\n' +
+    'Tier 3 — [name]: $[price]/mo or custom. Adds [enterprise features]. Target: [persona].\n' +
+    'Pricing metric: [per seat / per usage unit / per feature gate].\n' +
+    'Annual discount: [X]% for annual commitment.',
+
+  'Revenue Impact Analysis':
+    'Base case: [expected revenue change] — [show assumptions and math].\n' +
+    'Best case: [high-adoption scenario with revenue projection].\n' +
+    'Worst case: [churn/downgrade scenario with revenue projection].\n' +
+    'Break-even: [when new model surpasses old model revenue].\n' +
+    'Key sensitivity: [which assumption matters most to the outcome].',
+
+  'Customer Impact & Migration':
+    'Price increase: [X]% of customers see an increase averaging [amount].\n' +
+    'Price decrease or neutral: [X]% of customers — [which segments and why].\n' +
+    'Grandfathering: [who gets legacy pricing, for how long, and conditions].\n' +
+    'Communication plan: [timeline — internal → beta → general availability].\n' +
+    'Support readiness: [estimated question volume and playbook].',
+
+  'Recommendation & Next Steps':
+    'Recommendation: [which option, stated clearly with 1-sentence rationale].\n' +
+    'Decision needed: [what leadership must approve and by when].\n' +
+    'Timeline: [decision date → prep → soft launch → full rollout].\n' +
+    'Success metrics: [what you\'ll measure at 30/60/90 days].\n' +
+    'Reporting: [how and when you\'ll share results with leadership].',
+
+  // ─── Product One-Pager ───
+  'The Opportunity':
+    'Market size: [TAM/SAM with source — $ or user count].\n' +
+    'Growth: [market growth rate and key drivers].\n' +
+    'Customer signal: [evidence of demand — NPS verbatims, support tickets, win-loss data].\n' +
+    'Why us: [what positions us to capture this opportunity].',
+
+  'Proposed Solution':
+    'We will build [product/feature] that lets [target user] [key action].\n' +
+    'Core capabilities: [2-3 key things it does].\n' +
+    'User experience: [what the user sees and does — keep it concrete].\n' +
+    'Differentiation: [what makes this better than existing alternatives].',
+
+  'Success Metrics':
+    'Primary metric: [the single number that defines success].\n' +
+    'Current baseline: [where that metric stands today].\n' +
+    'Target: [specific goal with timeframe — e.g. "+15% within 90 days"].\n' +
+    'Guardrail: [what should NOT get worse as a result of this work].',
+
+  'Scope & Timeline':
+    'Phase 1 (MVP): [core capabilities] — target: [date].\n' +
+    'Phase 2: [enhancements based on Phase 1 learnings] — target: [date].\n' +
+    'Out of scope: [what you are explicitly NOT building].\n' +
+    'Key dependency: [external team, API, or decision this depends on].',
+
+  'Resource Ask':
+    'Team: [X engineers + Y designers + Z other] for [duration].\n' +
+    'Budget: [development cost + infrastructure + third-party services].\n' +
+    'Cross-functional: [design, data science, legal, marketing needs].\n' +
+    'Trade-off: [what gets deprioritized if we staff this].',
+
+  // ─── Product Pitch ───
+  'The Big Idea':
+    '[Target users] [pain point — quantified if possible].\n' +
+    '[Product name] [solves this by / enables them to] [key capability].\n' +
+    'It\'s [the X for Y — positioning analogy] — [why this will win].',
+
+  'Market Opportunity':
+    'TAM: $[total addressable market] ([source]).\n' +
+    'SAM: $[serviceable addressable market] — our realistic target.\n' +
+    'Growth: [X]% YoY driven by [key market drivers].\n' +
+    'Why now: [what has changed — technology shift, regulation, behavior change].\n' +
+    'Tailwinds: [adjacent trends that support this bet].',
+
+  'Customer Pain':
+    'Primary user: [persona] — they spend [X hours/week or $X/year] on [painful task].\n' +
+    'Current alternatives: [what they use today and why it falls short].\n' +
+    'Quantified cost: [time lost, revenue missed, or money wasted].\n' +
+    'Customer voice: "[quote from research or sales conversation]" — [Name, Title].',
+
+  'Our Solution':
+    'First use: [what the user sees when they open the product].\n' +
+    'Core workflow: [3-5 steps from start to value].\n' +
+    '"Aha" moment: [when the user first feels the value].\n' +
+    'Key differentiator: [what competitors can\'t easily copy].',
+
+  'Why Us':
+    'Existing assets: [data, distribution, brand, or technology advantages].\n' +
+    'Team: [relevant expertise and track record].\n' +
+    'Moat: [what makes this defensible — network effects, data, switching costs].\n' +
+    'Unfair advantage: [what we have that competitors don\'t].',
+
+  'Business Model':
+    'Revenue model: [subscription / usage / transaction / hybrid].\n' +
+    'Price point: $[price] per [unit] — rationale: [comparable benchmarks].\n' +
+    'Unit economics: CAC $[X], LTV $[Y], gross margin [Z]%.\n' +
+    'Revenue projection: $[12-month] → $[36-month].\n' +
+    'Path to profitability: [when and how].',
+
+  'Go-to-Market':
+    'First customers: [who are the first 10/100/1000 and how do you reach them].\n' +
+    'Distribution: [direct sales / product-led / partnerships / marketplace].\n' +
+    'Marketing: [content, events, outbound, community — primary channels].\n' +
+    'Partnerships: [key integrations or co-marketing needed].\n' +
+    'Validation: [early traction — waitlist, LOIs, pilot results].',
+
+  'Roadmap & Milestones':
+    'Phase 1 (0-3 months): [MVP scope and key deliverables].\n' +
+    'Phase 2 (3-6 months): [expansion — features, segments, channels].\n' +
+    'Phase 3 (6-12 months): [scale and optimization].\n' +
+    'Key decision points: [go/no-go gates with criteria].\n' +
+    'Kill criteria: [what would make us stop].',
+
+  'The Ask':
+    'Team: [specific roles and headcount needed].\n' +
+    'Budget: $[total] — [development + infrastructure + marketing breakdown].\n' +
+    'Timeline: [when you need the decision and why].\n' +
+    'Deliverables: [what you\'ll deliver by when — concrete milestones].\n' +
+    'Success at 6 months: [what "good" looks like].',
+
+  // ─── Packaging Recommendation ───
+  'Current Packaging Assessment':
+    'Current tiers: [tier names, prices, and what\'s in each].\n' +
+    'Revenue split: [% of revenue from each tier].\n' +
+    'Usage data: [which features drive upgrades vs. are underused].\n' +
+    'Conversion: [where prospects drop off in the upgrade funnel].\n' +
+    'Customer feedback: [what customers say about current packaging].',
+
+  'Competitive Packaging Landscape':
+    'Competitor A: [tiers, pricing, and key differentiating features per tier].\n' +
+    'Competitor B: [tiers, pricing, and key differentiating features per tier].\n' +
+    'Trend: the category is moving toward [packaging pattern].\n' +
+    'Gap to exploit: [what competitors gate high that we could offer lower].',
+
+  'Proposed Packaging':
+    'Tier 1 — [name] ($[price]/mo): Target [persona]. Includes [features].\n' +
+    'Tier 2 — [name] ($[price]/mo): Target [persona]. Adds [upgrade triggers].\n' +
+    'Tier 3 — [name] ($[price]/mo): Target [persona]. Adds [premium features].\n' +
+    'Usage limits: [seats, storage, API calls per tier].\n' +
+    'Upgrade trigger: [the specific feature that motivates tier movement].',
+
+  'Feature Allocation Rationale':
+    'Table stakes (all tiers): [features every customer expects].\n' +
+    'Upgrade triggers: [features that justify the next tier — backed by data].\n' +
+    'Premium-only: [features reserved for top tier — and why].\n' +
+    'Data backing: [usage patterns and willingness-to-pay evidence].\n' +
+    'Competitive consideration: [features we keep low to win against competitors].',
+
+  'Revenue & Adoption Impact':
+    'Expected revenue change: [net impact by tier — show migration math].\n' +
+    'Customer migration: [X]% upgrade, [Y]% stay, [Z]% downgrade.\n' +
+    'New acquisition: [impact on new customer conversion by tier].\n' +
+    'Scenarios: optimistic $[X] / base $[Y] / conservative $[Z].\n' +
+    'Break-even: [when short-term revenue loss is recovered, if applicable].',
+
+  'Migration Plan':
+    'Grandfathering: [who keeps current pricing and for how long].\n' +
+    'Forced migrations: [which customers must change and why].\n' +
+    'Communication: [internal (week 1) → beta (week 2-4) → all customers (week 6)].\n' +
+    'Tools: [self-serve upgrade/downgrade flow vs. CS-assisted].\n' +
+    'Rollback: [what triggers a rollback and how it works].',
+
+  'Recommendation & Decision Points':
+    'Recommendation: [which packaging option and why — in one sentence].\n' +
+    'Decision needed: [what leadership must approve].\n' +
+    'Open questions: [unresolved items that need input].\n' +
+    'Launch timeline: [decision → prep → soft launch → full rollout].\n' +
+    'Success criteria: [what you\'ll measure at 30/60/90 days].',
 };
 
 /**

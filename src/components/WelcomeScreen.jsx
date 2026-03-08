@@ -3,7 +3,7 @@ import { PenLine, Key, Eye, EyeOff, Cpu, Sparkles, ArrowLeft, RefreshCw, Loader2
 import { useDocumentTemplate } from '../hooks/useDocumentTemplate';
 import { hasApiKey, getApiKey, setApiKey, getProvider, setProvider, checkOllama, listModels, getOllamaModel, setOllamaModel } from '../lib/ai-provider';
 
-export default function WelcomeScreen({ onStart, onOpenSettings }) {
+export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }) {
   const [input, setInput] = useState('');
   const inputRef = useRef(null);
   const { detection, detect } = useDocumentTemplate();
@@ -127,12 +127,16 @@ export default function WelcomeScreen({ onStart, onOpenSettings }) {
         exiting ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      <div className="flex items-center gap-3 mb-12">
+      <button
+        onClick={onGoToLanding}
+        className="flex items-center gap-3 mb-12 hover:opacity-70 transition-opacity cursor-pointer"
+        title="Back to Home"
+      >
         <PenLine className="w-8 h-8 text-amber" />
         <h1 className="font-[var(--font-ui)] text-3xl font-bold tracking-tight text-text">
           Clarity
         </h1>
-      </div>
+      </button>
 
       <div className="w-full max-w-xl">
 
@@ -140,7 +144,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings }) {
         {step === 'provider' && !providerChoice && (
           <div className="animate-fade-in">
             <p className="text-center text-sm font-[var(--font-ui)] text-ghost mb-8">
-              How would you like to power AI coaching?
+              How would you like to power AI features?
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -310,7 +314,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings }) {
               </label>
             </div>
             <p className="text-sm font-[var(--font-ui)] text-ghost mb-4">
-              Clarity uses Claude to power ghost text and coaching. Enter your API key to get started.
+              Clarity uses Claude to power ghost text and writing assistance. Enter your API key to get started.
             </p>
             <div className="relative">
               <input
@@ -360,7 +364,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings }) {
 
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm font-[var(--font-ui)] text-ghost">
-                Try: product requirement document, one-pager, launch brief, competitive analysis
+                Try: PRFAQ, PRD, product pitch, pricing proposal, packaging, one-pager, launch brief
               </p>
               <button
                 onClick={onOpenSettings || (() => setStep('provider'))}

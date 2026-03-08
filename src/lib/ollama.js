@@ -114,18 +114,20 @@ async function callOllama({ system, userMessage, maxTokens = 60, temperature = 0
 // ── Domain functions (mirror anthropic.js signatures + prompts) ───
 
 export async function getGhostText({ sectionTitle, documentType, prefaceContext, userText, coveredDimensions, missingDimensions, signal }) {
-  const system = `You are a writing coach for product managers. Your job is NOT to write for them — your job is to give them the single best next sentence or question that helps them think about what they should say next.
+  const system = `You are a writing assistant for product managers. You help them think, then suggest what to write.
+
+Return EXACTLY two lines:
+Q: A sharp question that makes the PM think about what the next sentence should say. Maximum 15 words.
+R: A recommended sentence they could write next. Use specifics from the document context. Maximum 25 words. Write it as a real sentence (not a question, not a bracket template).
 
 Rules:
-- Return ONLY a single sentence or question. Maximum 20 words.
-- Make it a PROMPT for their thinking, not a finished statement.
-- Use the document context (product name, value prop, etc.) to make your prompt specific and relevant.
-- You are told which structural elements the user has already covered and which are still missing. Focus on the most important missing element.
-- Acknowledge what they have covered — don't repeat it. Ask about what's next.
-- Never complete their thought for them. Always make them decide.
-- Tone: smart, direct, collegial. Not formal, not sycophantic.
-- Target readability: grade level 14 (college sophomore). Coach accordingly.
-- Return ONLY the sentence, no preamble, no explanation.`;
+- The Q should challenge their thinking — don't ask obvious questions.
+- The R should be a strong starting point they can edit, not a final answer.
+- Use the document context (product name, value prop, etc.) to make both Q and R specific and relevant.
+- Focus on the most important missing structural element.
+- Acknowledge what they have covered — don't repeat it.
+- Tone: smart, direct, collegial.
+- Return ONLY the two lines starting with Q: and R: — no preamble, no explanation.`;
 
   const contextLine = prefaceContext ? `\nDocument context: ${prefaceContext}` : '';
   const structureLine = coveredDimensions && missingDimensions
@@ -135,13 +137,13 @@ Rules:
 Document type: ${documentType || 'General'}${contextLine}${structureLine}
 What the user has written so far in this section: ${userText || '(empty)'}
 
-Give me the next ghost text prompt focusing on the most important missing element.`;
+Give me the Q and R for the next ghost text focusing on the most important missing element.`;
 
-  return callOllama({ system, userMessage, maxTokens: 60, temperature: 0.7, signal });
+  return callOllama({ system, userMessage, maxTokens: 120, temperature: 0.7, signal });
 }
 
 export async function getTemplateExample({ sectionTitle, templateStructure, prefaceContext, signal }) {
-  const system = `You are a PM writing coach. Given a section template with [bracket placeholders] and product context, generate a realistic filled-in example showing what a strong version of this section looks like.
+  const system = `You are a PM writing assistant. Given a section template with [bracket placeholders] and product context, generate a realistic filled-in example showing what a strong version of this section looks like.
 
 Rules:
 - Fill each [bracket placeholder] with specific, realistic content based on the product context.
@@ -162,7 +164,7 @@ Generate a filled-in example.`;
 }
 
 export async function getClarityCheck({ sectionTitle, documentType, sectionText, signal }) {
-  const system = `You are a writing coach for product managers. Your job is to give sharp, specific observations about one section of a PM document.
+  const system = `You are a writing assistant for product managers. Your job is to give sharp, specific observations about one section of a PM document.
 
 Rules:
 - Identify 1 to 3 specific clarity problems in the text. Focus on thinking quality, not style.
@@ -184,7 +186,7 @@ Give me a Clarity Check.`;
 }
 
 export async function getCoachingNudge({ documentContent, signal }) {
-  const system = `You are an expert PM writing coach reviewing a document in progress.
+  const system = `You are an expert PM writing assistant reviewing a document in progress.
 Look at what the user has written and identify ONE specific weakness in their thinking — not their writing style.
 Return a single coaching observation as a short, direct question (max 15 words).
 Focus on: missing user context, unclear success criteria, solution-before-problem, missing tradeoffs, vague scope.

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FilePlus, Check, Library, Settings } from 'lucide-react';
+import { PenLine, FilePlus, Check, Library, Settings, LogOut } from 'lucide-react';
 import ExportMenu from './ExportMenu';
 
 export default function Toolbar({
@@ -11,7 +11,10 @@ export default function Toolbar({
   onExportAll,
   onNewDoc,
   onGoToLibrary,
+  onGoToLanding,
   onOpenSettings,
+  onSignOut,
+  user,
   saveStatus,
   readabilityGrade,
   readabilityFeedback,
@@ -32,6 +35,15 @@ export default function Toolbar({
     <div className="sticky top-0 z-10 bg-bg/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
+          <button
+            onClick={onGoToLanding}
+            className="flex items-center gap-1.5 shrink-0 hover:opacity-70 transition-opacity cursor-pointer"
+            title="Back to Home"
+          >
+            <PenLine className="w-5 h-5 text-amber" />
+            <span className="text-sm font-bold font-[var(--font-ui)] text-text tracking-tight">Clarity</span>
+          </button>
+          <div className="w-px h-5 bg-border shrink-0" />
           <div
             ref={titleRef}
             contentEditable
@@ -91,6 +103,30 @@ export default function Toolbar({
           >
             <Settings size={16} />
           </button>
+          {onSignOut && user && (
+            <>
+              <div className="w-px h-5 bg-border shrink-0" />
+              {user.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt=""
+                  className="w-6 h-6 rounded-full"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-amber/20 flex items-center justify-center text-[10px] font-bold font-[var(--font-ui)] text-amber">
+                  {(user.displayName || user.email || '?')[0].toUpperCase()}
+                </div>
+              )}
+              <button
+                onClick={onSignOut}
+                className="p-1.5 text-ghost hover:text-text transition-colors cursor-pointer"
+                title="Sign out"
+              >
+                <LogOut size={14} />
+              </button>
+            </>
+          )}
         </div>
       </div>
 

@@ -873,6 +873,950 @@ const SECTION_DIMENSIONS = {
       signals: ['stop', 'eliminate', 'drop', 'remove', 'quit', 'end', 'abandon', 'cut', 'no longer', 'retire', 'phase out', 'sunset', 'kill', 'discontinue', 'avoid', 'refrain', 'resist', 'let go', 'walk away', 'not anymore', 'done with', 'enough of'],
     },
   ],
+
+  // ─── PRFAQ ───
+  'Headline': [
+    {
+      dimension: 'product',
+      label: 'the product name',
+      prompt: 'Name the product or feature you\'re announcing.',
+      signals: ['launch', 'announce', 'introduce', 'unveil', 'release', 'new', 'product', 'feature', 'platform', 'tool', 'service', 'app', 'solution'],
+    },
+    {
+      dimension: 'customer',
+      label: 'the target customer',
+      prompt: 'Who is this for — which customer or persona?',
+      signals: ['customer', 'user', 'team', 'business', 'enterprise', 'company', 'developer', 'manager', 'leader', 'professional', 'creator', 'merchant', 'seller', 'buyer', 'operator'],
+    },
+    {
+      dimension: 'benefit',
+      label: 'the key benefit',
+      prompt: 'What\'s the headline benefit — what outcome does the customer get?',
+      signals: ['help', 'enable', 'empower', 'save', 'reduce', 'increase', 'improve', 'cut', 'grow', 'accelerate', 'simplify', 'automate', 'eliminate', 'boost', 'deliver', 'achieve', 'transform', 'unlock', '%', 'faster', 'easier', 'better'],
+    },
+  ],
+
+  'Subheadline': [
+    {
+      dimension: 'what',
+      label: 'what the product does',
+      prompt: 'What does the product actually do — in plain language?',
+      signals: ['provide', 'deliver', 'give', 'offer', 'enable', 'allow', 'let', 'power', 'automate', 'streamline', 'connect', 'integrate', 'analyze', 'monitor', 'track', 'manage', 'create', 'build', 'generate'],
+    },
+    {
+      dimension: 'who',
+      label: 'who it\'s for',
+      prompt: 'Who specifically benefits from this?',
+      signals: ['team', 'user', 'customer', 'manager', 'leader', 'developer', 'analyst', 'operator', 'admin', 'professional', 'business', 'organization', 'department', 'role'],
+    },
+    {
+      dimension: 'value',
+      label: 'the primary value',
+      prompt: 'What\'s the primary value — visibility, speed, cost savings, accuracy?',
+      signals: ['visibility', 'insight', 'speed', 'fast', 'real-time', 'accurate', 'reliable', 'cost', 'save', 'efficient', 'productive', 'confident', 'control', 'scale', 'growth'],
+    },
+  ],
+
+  'Customer Problem': [
+    {
+      dimension: 'who',
+      label: 'who has this problem',
+      prompt: 'Who specifically experiences this pain?',
+      signals: ['customer', 'user', 'team', 'manager', 'leader', 'people', 'they', 'we', 'our', 'persona', 'segment', 'buyer', 'business', 'company', 'organization', 'department', 'role', 'professional'],
+    },
+    {
+      dimension: 'pain',
+      label: 'the specific pain',
+      prompt: 'What exactly is painful, broken, or frustrating?',
+      signals: ['problem', 'pain', 'struggle', 'frustrat', 'broken', 'difficult', 'challenge', 'issue', 'gap', 'miss', 'fail', 'error', 'waste', 'slow', 'manual', 'tedious', 'confus', 'unreliable', 'expensive', 'risk', 'lose', 'losing'],
+    },
+    {
+      dimension: 'workaround',
+      label: 'current workaround',
+      prompt: 'How do they handle this today — and why is that inadequate?',
+      signals: ['today', 'currently', 'workaround', 'manual', 'spreadsheet', 'email', 'existing', 'alternative', 'cobble', 'hack', 'instead', 'rely on', 'use', 'tool', 'vendor', 'process'],
+    },
+    {
+      dimension: 'cost',
+      label: 'the quantified cost',
+      prompt: 'What does this problem cost in time, money, or missed opportunities?',
+      signals: ['cost', 'hour', 'minute', 'time', 'money', 'dollar', '$', 'revenue', 'loss', 'waste', 'miss', 'opportunity', 'churn', 'delay', 'overhead', '%', 'million', 'thousand', 'per year', 'per month', 'annually', 'productivity'],
+    },
+  ],
+
+  'Solution': [
+    {
+      dimension: 'capability',
+      label: 'what the user can do',
+      prompt: 'What can the user now do that they couldn\'t before?',
+      signals: ['can', 'able', 'now', 'enable', 'allow', 'let', 'empower', 'give', 'provide', 'deliver', 'create', 'build', 'manage', 'track', 'automate', 'see', 'view', 'access', 'control'],
+    },
+    {
+      dimension: 'experience',
+      label: 'the user experience',
+      prompt: 'What does the user see and do — describe the experience, not the architecture.',
+      signals: ['experience', 'see', 'click', 'view', 'dashboard', 'screen', 'page', 'interface', 'notification', 'alert', 'report', 'workflow', 'step', 'simple', 'easy', 'intuitive', 'visual', 'real-time', 'instant'],
+    },
+    {
+      dimension: 'outcome',
+      label: 'the concrete outcome',
+      prompt: 'What concrete result does the user get — time saved, errors eliminated, revenue gained?',
+      signals: ['result', 'outcome', 'save', 'reduce', 'eliminate', 'increase', 'improve', 'faster', 'better', 'fewer', 'more', 'accurate', 'reliable', '%', 'hour', 'minute', 'day', 'dollar', 'revenue', 'error', 'mistake'],
+    },
+    {
+      dimension: 'differentiation',
+      label: 'what makes it different',
+      prompt: 'What makes this uniquely effective compared to alternatives?',
+      signals: ['different', 'unique', 'unlike', 'better', 'only', 'first', 'advantage', 'proprietary', 'patent', 'exclusive', 'novel', 'innovative', 'breakthrough', 'new approach', 'instead of', 'compared to', 'versus', 'competitor'],
+    },
+  ],
+
+  'Customer Quote': [
+    {
+      dimension: 'before',
+      label: 'the before state',
+      prompt: 'What was the customer\'s situation before — what was painful?',
+      signals: ['before', 'used to', 'previously', 'was', 'were', 'had to', 'couldn\'t', 'struggled', 'spent', 'wasted', 'guessing', 'manual', 'old', 'legacy'],
+    },
+    {
+      dimension: 'after',
+      label: 'the after state',
+      prompt: 'What changed — with specific numbers or outcomes?',
+      signals: ['now', 'after', 'since', 'today', 'reduced', 'increased', 'improved', 'dropped', 'grew', 'saved', 'eliminated', 'cut', 'from', 'to', '%', 'percent', 'hour', 'minute', 'day', 'dollar', 'x'],
+    },
+    {
+      dimension: 'attribution',
+      label: 'who said it',
+      prompt: 'Attribute the quote — Name, Title, Company.',
+      signals: ['vp', 'director', 'head', 'manager', 'ceo', 'cto', 'coo', 'founder', 'president', 'lead', 'chief', 'senior', 'principal', 'inc', 'corp', 'llc', 'ltd', 'co', 'company', 'team'],
+    },
+  ],
+
+  'How It Works': [
+    {
+      dimension: 'steps',
+      label: 'the step-by-step flow',
+      prompt: 'Walk through the steps — what does the user do first, second, third?',
+      signals: ['step', 'first', 'then', 'next', 'finally', '1.', '2.', '3.', 'start', 'begin', 'connect', 'set up', 'configure', 'click', 'select', 'enter', 'upload', 'import', 'install'],
+    },
+    {
+      dimension: 'feedback',
+      label: 'what the user gets back',
+      prompt: 'At each step, what does the user see or get back?',
+      signals: ['see', 'get', 'receive', 'shows', 'displays', 'returns', 'generates', 'report', 'dashboard', 'notification', 'alert', 'recommendation', 'insight', 'result', 'output', 'response', 'confirmation'],
+    },
+    {
+      dimension: 'time-to-value',
+      label: 'time to value',
+      prompt: 'How long from sign-up to first meaningful result?',
+      signals: ['minute', 'hour', 'day', 'instant', 'immediately', 'quick', 'fast', 'setup', 'onboard', 'within', 'less than', 'under', 'time to', 'ready in', 'takes'],
+    },
+  ],
+
+  'Executive Quote': [
+    {
+      dimension: 'strategic-connection',
+      label: 'strategic connection',
+      prompt: 'Connect this product to the company\'s mission or strategic direction.',
+      signals: ['mission', 'strategy', 'vision', 'direction', 'priority', 'invest', 'commit', 'believe', 'position', 'future', 'opportunity', 'market', 'customer', 'focus', 'pillar', 'north star'],
+    },
+    {
+      dimension: 'insight',
+      label: 'the driving insight',
+      prompt: 'What customer or market insight drove this decision?',
+      signals: ['customer', 'told us', 'data', 'research', 'insight', 'learned', 'discovered', 'feedback', 'survey', 'interview', 'asked for', 'need', 'demand', 'trend', 'signal', 'pain point'],
+    },
+    {
+      dimension: 'attribution',
+      label: 'speaker attribution',
+      prompt: 'Who is speaking — Name, Title (VP/SVP/GM level)?',
+      signals: ['vp', 'svp', 'evp', 'gm', 'director', 'president', 'chief', 'head of', 'senior', 'founder', 'ceo', 'cto', 'cpo', 'coo'],
+    },
+  ],
+
+  'Call to Action': [
+    {
+      dimension: 'availability',
+      label: 'when it\'s available',
+      prompt: 'When is this available — today, beta, or future date?',
+      signals: ['available', 'today', 'now', 'starting', 'beginning', 'launch', 'beta', 'early access', 'generally available', 'ga', 'open', 'live', 'rolling out', 'date', 'quarter'],
+    },
+    {
+      dimension: 'first-step',
+      label: 'the first step',
+      prompt: 'What\'s the specific first step for a customer to get started?',
+      signals: ['visit', 'go to', 'sign up', 'enable', 'activate', 'contact', 'request', 'click', 'open', 'navigate', 'url', 'link', '.com', 'portal', 'dashboard', 'settings', 'start', 'try'],
+    },
+    {
+      dimension: 'effort',
+      label: 'setup effort',
+      prompt: 'How long does setup take — minutes, hours, or days?',
+      signals: ['minute', 'hour', 'day', 'setup', 'install', 'configure', 'quick', 'easy', 'simple', 'no code', 'one-click', 'self-serve', 'guided', 'wizard', 'takes', 'under', 'less than'],
+    },
+  ],
+
+  'Internal FAQ': [
+    {
+      dimension: 'why-now',
+      label: 'why now',
+      prompt: 'Why is this the right time — what changed in the market or our data?',
+      signals: ['why now', 'timing', 'urgency', 'changed', 'shift', 'trigger', 'signal', 'data', 'trend', 'competitor', 'market', 'window', 'opportunity', 'before', 'while'],
+    },
+    {
+      dimension: 'opportunity-size',
+      label: 'the opportunity size',
+      prompt: 'How big is the opportunity — TAM, revenue projection, or user impact?',
+      signals: ['tam', 'sam', 'market', 'revenue', 'opportunity', 'size', 'addressable', 'billion', 'million', 'thousand', '$', 'arpu', 'arr', 'mrr', 'ltv', 'user', 'customer', 'potential'],
+    },
+    {
+      dimension: 'risks',
+      label: 'key risks',
+      prompt: 'What are the top 2-3 execution or technical risks?',
+      signals: ['risk', 'concern', 'challenge', 'unknown', 'assumption', 'dependency', 'technical', 'execution', 'timeline', 'resource', 'complexity', 'mitigation', 'if', 'could', 'might', 'fail'],
+    },
+    {
+      dimension: 'cost',
+      label: 'build cost',
+      prompt: 'What does this cost to build — team, time, infrastructure?',
+      signals: ['cost', 'budget', 'team', 'engineer', 'headcount', 'resource', 'infrastructure', 'month', 'quarter', 'invest', 'spend', 'allocat', 'staff', 'hire', 'contractor', 'vendor'],
+    },
+    {
+      dimension: 'tradeoffs',
+      label: 'what you\'re NOT doing',
+      prompt: 'What are you choosing NOT to do in order to do this?',
+      signals: ['not', 'instead', 'deprioritize', 'defer', 'trade-off', 'tradeoff', 'sacrifice', 'delay', 'cut', 'drop', 'park', 'shelve', 'opportunity cost', 'alternative', 'choose'],
+    },
+  ],
+
+  'External FAQ': [
+    {
+      dimension: 'differentiation',
+      label: 'how it\'s different',
+      prompt: 'How is this different from what you already offer?',
+      signals: ['different', 'new', 'unlike', 'compared', 'versus', 'existing', 'current', 'upgrade', 'addition', 'complement', 'replace', 'extend', 'enhance', 'beyond', 'more than'],
+    },
+    {
+      dimension: 'requirements',
+      label: 'setup requirements',
+      prompt: 'Does this require changes to the customer\'s current setup?',
+      signals: ['require', 'need', 'setup', 'install', 'configure', 'change', 'update', 'migrate', 'integration', 'compatible', 'work with', 'support', 'prerequisite', 'dependency'],
+    },
+    {
+      dimension: 'data',
+      label: 'data needs',
+      prompt: 'What data access does this need from the customer?',
+      signals: ['data', 'access', 'permission', 'connect', 'api', 'feed', 'import', 'sync', 'integrate', 'read', 'write', 'privacy', 'security', 'encrypt', 'store', 'collect'],
+    },
+    {
+      dimension: 'pricing',
+      label: 'pricing info',
+      prompt: 'What does it cost — included, add-on, or new plan?',
+      signals: ['cost', 'price', 'pricing', 'free', 'included', 'add-on', 'upgrade', 'plan', 'tier', 'pay', 'charge', 'fee', 'subscription', 'per', 'month', 'annual', 'trial'],
+    },
+  ],
+
+  // ─── Pricing Proposal ───
+  'Current State & Problem': [
+    {
+      dimension: 'current-model',
+      label: 'current pricing model',
+      prompt: 'What\'s the current pricing structure — flat rate, per seat, tiers?',
+      signals: ['current', 'today', 'existing', 'model', 'price', 'pricing', 'tier', 'plan', 'flat', 'seat', 'per user', 'charge', 'bill', 'subscription', 'free', 'premium', 'enterprise'],
+    },
+    {
+      dimension: 'revenue-data',
+      label: 'revenue distribution',
+      prompt: 'How does revenue split across customer segments?',
+      signals: ['revenue', 'distribution', 'segment', 'split', 'arpu', 'arr', 'mrr', 'average', 'median', 'top', 'bottom', 'cohort', 'tier', 'plan', 'customer', 'account', 'contract'],
+    },
+    {
+      dimension: 'problem',
+      label: 'the pricing problem',
+      prompt: 'What\'s wrong — underpricing, losing deals, value misalignment?',
+      signals: ['problem', 'issue', 'gap', 'mismatch', 'underpric', 'overpric', 'losing', 'churn', 'downgrade', 'discount', 'pressure', 'complaint', 'feedback', 'confusion', 'friction', 'barrier', 'block', 'leave money'],
+    },
+    {
+      dimension: 'evidence',
+      label: 'supporting evidence',
+      prompt: 'What data backs this up — win-loss, usage analysis, customer feedback?',
+      signals: ['data', 'evidence', 'analysis', 'win', 'loss', 'deal', 'usage', 'feature', 'feedback', 'survey', 'interview', 'research', 'benchmark', 'found', 'showed', 'indicate', 'reveal', 'NPS', 'CSAT'],
+    },
+  ],
+
+  'Market & Competitive Pricing': [
+    {
+      dimension: 'competitors',
+      label: 'competitor pricing',
+      prompt: 'How do direct competitors price — models, tiers, and amounts?',
+      signals: ['competitor', 'competition', 'rival', 'alternative', 'charge', 'price', 'cost', 'tier', 'plan', 'model', 'per seat', 'per user', 'freemium', 'free', 'enterprise', 'vs', 'compared'],
+    },
+    {
+      dimension: 'trends',
+      label: 'market pricing trends',
+      prompt: 'Where is pricing headed — usage-based, outcome-based, hybrid?',
+      signals: ['trend', 'market', 'direction', 'shift', 'moving toward', 'usage-based', 'outcome', 'value-based', 'consumption', 'hybrid', 'future', 'emerging', 'industry', 'standard', 'norm'],
+    },
+    {
+      dimension: 'positioning',
+      label: 'our positioning',
+      prompt: 'Where do we sit relative to competitors — premium, mid-market, budget?',
+      signals: ['position', 'premium', 'mid-market', 'budget', 'cheap', 'expensive', 'value', 'perception', 'brand', 'quality', 'above', 'below', 'aligned', 'misaligned', 'gap', 'opportunity'],
+    },
+  ],
+
+  'Proposed Pricing Model': [
+    {
+      dimension: 'tiers',
+      label: 'tier structure',
+      prompt: 'What are the tier names, prices, and what\'s included in each?',
+      signals: ['tier', 'plan', 'level', 'free', 'starter', 'pro', 'business', 'enterprise', 'team', 'growth', 'scale', 'basic', 'standard', 'premium', 'plus', 'name', 'include'],
+    },
+    {
+      dimension: 'pricing-metric',
+      label: 'the pricing metric',
+      prompt: 'What\'s the pricing unit — per seat, per usage, per feature?',
+      signals: ['per seat', 'per user', 'per unit', 'usage', 'consumption', 'feature', 'flat rate', 'metered', 'per month', 'per year', 'annual', 'monthly', 'metric', 'unit', 'base price', 'overage', 'add-on'],
+    },
+    {
+      dimension: 'prices',
+      label: 'specific prices',
+      prompt: 'What are the specific price points for each tier?',
+      signals: ['$', 'price', 'cost', 'charge', 'fee', 'amount', 'per month', '/mo', '/yr', 'annual', 'monthly', 'free', 'custom', 'contact', 'quote', 'starting at', 'from'],
+    },
+    {
+      dimension: 'upgrade-triggers',
+      label: 'upgrade triggers',
+      prompt: 'What features or limits drive customers from one tier to the next?',
+      signals: ['upgrade', 'limit', 'cap', 'threshold', 'trigger', 'unlock', 'access', 'gate', 'restrict', 'premium', 'advanced', 'additional', 'more', 'beyond', 'exceed', 'outgrow'],
+    },
+  ],
+
+  'Revenue Impact Analysis': [
+    {
+      dimension: 'base-case',
+      label: 'base case projection',
+      prompt: 'What\'s the expected revenue change — show your math?',
+      signals: ['expect', 'project', 'estimate', 'forecast', 'base case', 'likely', 'model', 'assume', 'scenario', 'revenue', 'arr', 'mrr', 'increase', 'decrease', 'net', 'impact', 'change', 'math', 'calculation'],
+    },
+    {
+      dimension: 'scenarios',
+      label: 'scenario analysis',
+      prompt: 'What do best case and worst case look like?',
+      signals: ['best case', 'worst case', 'optimistic', 'pessimistic', 'conservative', 'aggressive', 'upside', 'downside', 'range', 'scenario', 'if', 'assuming', 'sensitivity'],
+    },
+    {
+      dimension: 'breakeven',
+      label: 'break-even timeline',
+      prompt: 'When does the new model break even versus the old?',
+      signals: ['break even', 'breakeven', 'payback', 'recover', 'recoup', 'timeline', 'months', 'quarters', 'when', 'crossover', 'surpass', 'exceed', 'offset', 'net positive'],
+    },
+    {
+      dimension: 'assumptions',
+      label: 'key assumptions',
+      prompt: 'What are the key assumptions — which one matters most?',
+      signals: ['assumption', 'assume', 'depend', 'sensitive', 'variable', 'driver', 'lever', 'if', 'contingent', 'critical', 'key factor', 'based on', 'given that'],
+    },
+  ],
+
+  'Customer Impact & Migration': [
+    {
+      dimension: 'impact-distribution',
+      label: 'who is affected',
+      prompt: 'What % of customers see a price increase, decrease, or stay neutral?',
+      signals: ['percent', '%', 'customer', 'increase', 'decrease', 'neutral', 'impact', 'affected', 'segment', 'cohort', 'majority', 'minority', 'most', 'some', 'all', 'none', 'distribution'],
+    },
+    {
+      dimension: 'grandfathering',
+      label: 'grandfathering policy',
+      prompt: 'Who gets legacy pricing and for how long?',
+      signals: ['grandfather', 'legacy', 'existing', 'keep', 'maintain', 'honor', 'lock', 'protected', 'transition', 'exempt', 'grace period', 'sunset', 'expire', 'renewal', 'duration', 'months', 'year'],
+    },
+    {
+      dimension: 'communication',
+      label: 'communication plan',
+      prompt: 'How and when do you notify customers — what\'s the rollout sequence?',
+      signals: ['communicate', 'notify', 'announce', 'email', 'in-app', 'message', 'blog', 'changelog', 'timeline', 'sequence', 'phase', 'first', 'then', 'before', 'after', 'week', 'month', 'advance notice'],
+    },
+    {
+      dimension: 'support',
+      label: 'support readiness',
+      prompt: 'How will support handle the influx of pricing questions?',
+      signals: ['support', 'cs', 'customer success', 'help', 'question', 'faq', 'playbook', 'script', 'training', 'prepared', 'ready', 'volume', 'ticket', 'inquiry', 'call', 'chat', 'escalation'],
+    },
+  ],
+
+  'Recommendation & Next Steps': [
+    {
+      dimension: 'recommendation',
+      label: 'the clear recommendation',
+      prompt: 'Which option do you recommend — state it clearly in one sentence?',
+      signals: ['recommend', 'propose', 'suggest', 'advocate', 'endorse', 'option', 'choice', 'prefer', 'best', 'should', 'believe', 'advise', 'go with', 'proceed with', 'select'],
+    },
+    {
+      dimension: 'decision',
+      label: 'what needs deciding',
+      prompt: 'What specific decision do you need from leadership?',
+      signals: ['decision', 'approve', 'sign off', 'green light', 'authorize', 'agree', 'confirm', 'leadership', 'executive', 'board', 'sponsor', 'stakeholder', 'need from', 'ask', 'request'],
+    },
+    {
+      dimension: 'timeline',
+      label: 'proposed timeline',
+      prompt: 'What\'s the timeline — from decision to full rollout?',
+      signals: ['timeline', 'schedule', 'date', 'phase', 'rollout', 'launch', 'pilot', 'beta', 'soft launch', 'general availability', 'week', 'month', 'quarter', 'q1', 'q2', 'q3', 'q4', 'by', 'before', 'after'],
+    },
+    {
+      dimension: 'success-criteria',
+      label: 'success metrics',
+      prompt: 'How will you evaluate success at 30/60/90 days?',
+      signals: ['success', 'metric', 'measure', 'evaluate', 'track', 'monitor', 'report', 'kpi', '30 day', '60 day', '90 day', 'review', 'check-in', 'dashboard', 'target', 'goal', 'criteria'],
+    },
+  ],
+
+  // ─── Product One-Pager ───
+  'The Opportunity': [
+    {
+      dimension: 'market-size',
+      label: 'market sizing',
+      prompt: 'How big is this opportunity — TAM/SAM, user count, or revenue potential?',
+      signals: ['market', 'tam', 'sam', 'size', 'opportunity', 'billion', 'million', 'thousand', '$', 'revenue', 'user', 'customer', 'account', 'growing', 'growth', 'yoy', 'addressable', 'potential'],
+    },
+    {
+      dimension: 'evidence',
+      label: 'evidence of demand',
+      prompt: 'What evidence shows customers want this — NPS, support tickets, research?',
+      signals: ['evidence', 'data', 'feedback', 'nps', 'survey', 'interview', 'research', 'request', 'ticket', 'support', 'asked', 'demand', 'signal', 'verbatim', 'quote', 'customer', 'churn reason', 'win-loss'],
+    },
+    {
+      dimension: 'positioning',
+      label: 'why you\'re positioned to win',
+      prompt: 'What positions your team or company to capture this opportunity?',
+      signals: ['position', 'advantage', 'strength', 'asset', 'capability', 'expertise', 'distribution', 'brand', 'data', 'technology', 'relationship', 'trust', 'existing', 'platform', 'ecosystem', 'uniquely'],
+    },
+  ],
+
+  'Proposed Solution': [
+    {
+      dimension: 'what-we-build',
+      label: 'what you\'re building',
+      prompt: 'What will you build — describe it in plain language?',
+      signals: ['build', 'create', 'develop', 'launch', 'ship', 'product', 'feature', 'tool', 'platform', 'service', 'capability', 'module', 'integration', 'redesign', 'new', 'add'],
+    },
+    {
+      dimension: 'capabilities',
+      label: 'key capabilities',
+      prompt: 'What are the 2-3 core things it does?',
+      signals: ['can', 'allow', 'enable', 'let', 'provide', 'offer', 'capability', 'function', 'feature', 'action', 'workflow', 'automate', 'analyze', 'track', 'manage', 'visualize', 'connect', 'integrate'],
+    },
+    {
+      dimension: 'experience',
+      label: 'user experience',
+      prompt: 'What does the user see and do — keep it concrete?',
+      signals: ['user', 'experience', 'see', 'click', 'view', 'screen', 'dashboard', 'interface', 'workflow', 'step', 'simple', 'easy', 'intuitive', 'drag', 'drop', 'select', 'enter', 'upload'],
+    },
+    {
+      dimension: 'differentiation',
+      label: 'differentiation',
+      prompt: 'What makes this better than existing alternatives?',
+      signals: ['different', 'better', 'unique', 'unlike', 'advantage', 'only', 'first', 'faster', 'easier', 'cheaper', 'more accurate', 'more reliable', 'compared', 'versus', 'competitor', 'alternative', 'instead'],
+    },
+  ],
+
+  'Success Metrics': [
+    {
+      dimension: 'primary-metric',
+      label: 'the primary metric',
+      prompt: 'What single metric defines whether this worked?',
+      signals: ['primary', 'main', 'key', 'north star', 'metric', 'kpi', 'measure', 'track', 'success', 'number', 'conversion', 'retention', 'engagement', 'adoption', 'revenue', 'nps', 'csat', 'activation'],
+    },
+    {
+      dimension: 'baseline',
+      label: 'current baseline',
+      prompt: 'Where does that metric stand today?',
+      signals: ['today', 'current', 'baseline', 'now', 'existing', 'before', 'starting', 'stands at', 'average', 'benchmark', 'last', 'historical', 'recent'],
+    },
+    {
+      dimension: 'target',
+      label: 'specific target',
+      prompt: 'What\'s the specific target with a timeframe?',
+      signals: ['target', 'goal', 'aim', 'achieve', 'reach', 'hit', 'increase', 'decrease', 'improve', 'reduce', 'from', 'to', '%', 'by', 'within', 'days', 'weeks', 'months', '90 day', 'quarter'],
+    },
+    {
+      dimension: 'guardrail',
+      label: 'guardrail metric',
+      prompt: 'What should NOT get worse as a result of this work?',
+      signals: ['guardrail', 'not worse', 'maintain', 'protect', 'preserve', 'must not', 'should not', 'watch', 'monitor', 'side effect', 'unintended', 'negative', 'degradation', 'regression', 'below', 'threshold'],
+    },
+  ],
+
+  'Scope & Timeline': [
+    {
+      dimension: 'mvp',
+      label: 'MVP scope',
+      prompt: 'What\'s the MVP — the smallest version that still delivers value?',
+      signals: ['mvp', 'minimum', 'phase 1', 'first', 'core', 'essential', 'must have', 'v1', 'initial', 'launch', 'start with', 'begin', 'smallest', 'simplest', 'basic'],
+    },
+    {
+      dimension: 'out-of-scope',
+      label: 'what\'s out of scope',
+      prompt: 'What are you explicitly NOT building?',
+      signals: ['out of scope', 'not', 'exclude', 'defer', 'later', 'future', 'phase 2', 'v2', 'won\'t', 'skip', 'not building', 'not included', 'deprioritize', 'backlog', 'follow-up'],
+    },
+    {
+      dimension: 'timeline',
+      label: 'target dates',
+      prompt: 'When does each phase ship?',
+      signals: ['date', 'timeline', 'deadline', 'quarter', 'month', 'week', 'sprint', 'by', 'target', 'ship', 'launch', 'deliver', 'complete', 'q1', 'q2', 'q3', 'q4', 'phase', 'milestone'],
+    },
+    {
+      dimension: 'dependencies',
+      label: 'key dependencies',
+      prompt: 'What external dependencies or risks could affect the timeline?',
+      signals: ['dependency', 'depend', 'require', 'need', 'block', 'risk', 'external', 'team', 'api', 'platform', 'partner', 'vendor', 'approval', 'legal', 'compliance', 'infrastructure', 'if', 'delay'],
+    },
+  ],
+
+  'Resource Ask': [
+    {
+      dimension: 'team',
+      label: 'team needs',
+      prompt: 'What team do you need — roles, headcount, and duration?',
+      signals: ['team', 'engineer', 'designer', 'pm', 'analyst', 'headcount', 'hire', 'staff', 'resource', 'person', 'role', 'full-time', 'contractor', 'duration', 'month', 'quarter', 'sprint'],
+    },
+    {
+      dimension: 'budget',
+      label: 'budget needs',
+      prompt: 'What budget is needed — development, infrastructure, services?',
+      signals: ['budget', 'cost', 'spend', 'invest', '$', 'dollar', 'thousand', 'million', 'infrastructure', 'cloud', 'service', 'vendor', 'license', 'tool', 'software', 'hardware'],
+    },
+    {
+      dimension: 'cross-functional',
+      label: 'cross-functional needs',
+      prompt: 'What cross-functional support do you need — design, legal, marketing?',
+      signals: ['cross-functional', 'design', 'legal', 'marketing', 'sales', 'ops', 'data', 'security', 'compliance', 'support', 'cs', 'partner', 'collaboration', 'involvement', 'review', 'approval'],
+    },
+    {
+      dimension: 'tradeoffs',
+      label: 'what gets deprioritized',
+      prompt: 'What gets deprioritized if you do this?',
+      signals: ['tradeoff', 'trade-off', 'deprioritize', 'defer', 'delay', 'instead of', 'at the expense', 'sacrifice', 'cut', 'drop', 'park', 'opportunity cost', 'what else', 'alternative'],
+    },
+  ],
+
+  // ─── Product Pitch ───
+  'The Big Idea': [
+    {
+      dimension: 'pain',
+      label: 'the customer pain',
+      prompt: 'What pain or waste does the target user experience?',
+      signals: ['waste', 'spend', 'struggle', 'pain', 'frustrat', 'slow', 'expensive', 'broken', 'gap', 'miss', 'lose', 'losing', 'hour', 'minute', 'time', 'money', 'cost', 'risk', 'burden'],
+    },
+    {
+      dimension: 'solution',
+      label: 'what you\'re proposing',
+      prompt: 'What does your product do — in one sentence?',
+      signals: ['build', 'create', 'product', 'platform', 'tool', 'app', 'service', 'enable', 'help', 'provide', 'deliver', 'offer', 'solve', 'surface', 'automate', 'connect'],
+    },
+    {
+      dimension: 'positioning',
+      label: 'the positioning',
+      prompt: 'Why will this win — what makes it different?',
+      signals: ['win', 'different', 'unique', 'better', 'only', 'first', 'advantage', 'because', 'unlike', 'compared', 'positioning', 'the X for Y', 'search bar', 'new way', 'never been'],
+    },
+  ],
+
+  'Market Opportunity': [
+    {
+      dimension: 'tam',
+      label: 'total addressable market',
+      prompt: 'What\'s the TAM — with a credible source?',
+      signals: ['tam', 'total', 'addressable', 'market size', 'billion', 'million', '$', 'gartner', 'forrester', 'idc', 'report', 'valued at', 'worth', 'industry', 'sector', 'space'],
+    },
+    {
+      dimension: 'sam',
+      label: 'serviceable market',
+      prompt: 'What\'s your realistic serviceable market (SAM)?',
+      signals: ['sam', 'serviceable', 'realistic', 'target', 'segment', 'focus', 'initial', 'niche', 'beachhead', 'our share', 'capture', 'addressable', 'subset', 'specific'],
+    },
+    {
+      dimension: 'growth',
+      label: 'growth drivers',
+      prompt: 'How fast is the market growing and what\'s driving it?',
+      signals: ['grow', 'growth', 'yoy', 'cagr', '%', 'percent', 'increase', 'expand', 'driver', 'trend', 'tailwind', 'demand', 'adoption', 'shift', 'digital', 'ai', 'automation', 'remote'],
+    },
+    {
+      dimension: 'why-now',
+      label: 'why now',
+      prompt: 'Why is this the right moment — what changed?',
+      signals: ['why now', 'changed', 'shift', 'new', 'recent', 'emerging', 'tipping point', 'inflection', 'regulation', 'technology', 'behavior', 'pandemic', 'ai', 'cost', 'expectation', 'demand', 'ready', 'mature'],
+    },
+  ],
+
+  'Customer Pain': [
+    {
+      dimension: 'persona',
+      label: 'the user persona',
+      prompt: 'Who is the primary user — describe their role and daily work?',
+      signals: ['user', 'persona', 'customer', 'role', 'manager', 'director', 'analyst', 'engineer', 'designer', 'operator', 'leader', 'daily', 'day-to-day', 'workflow', 'job', 'responsible for'],
+    },
+    {
+      dimension: 'broken-task',
+      label: 'the broken workflow',
+      prompt: 'What specific task or workflow is broken for them?',
+      signals: ['task', 'workflow', 'process', 'step', 'manual', 'tedious', 'broken', 'slow', 'error', 'mistake', 'repeat', 'inefficient', 'clunky', 'outdated', 'fragmented', 'disconnected', 'silos'],
+    },
+    {
+      dimension: 'quantified-cost',
+      label: 'quantified cost',
+      prompt: 'How much does this problem cost — in time, money, or opportunities?',
+      signals: ['hour', 'minute', 'time', 'money', '$', 'cost', 'waste', 'lose', 'revenue', 'opportunity', 'productivity', 'overhead', 'per week', 'per month', 'annually', 'estimate', 'calculate', 'survey'],
+    },
+    {
+      dimension: 'voice',
+      label: 'customer voice',
+      prompt: 'Include a real or representative customer quote.',
+      signals: ['quote', 'said', 'told', 'feedback', 'verbatim', 'customer', 'user', 'interview', '"', 'words', 'voice', 'frustrating', 'wish', 'if only', 'need', 'want'],
+    },
+  ],
+
+  'Our Solution': [
+    {
+      dimension: 'first-use',
+      label: 'first use experience',
+      prompt: 'What does the user see when they first open the product?',
+      signals: ['first', 'open', 'see', 'screen', 'dashboard', 'landing', 'onboard', 'welcome', 'setup', 'wizard', 'start', 'begin', 'initial', 'home', 'interface', 'view'],
+    },
+    {
+      dimension: 'core-flow',
+      label: 'core workflow',
+      prompt: 'Walk through the core workflow in 3-5 steps.',
+      signals: ['step', 'workflow', 'flow', 'process', 'first', 'then', 'next', '1.', '2.', '3.', 'click', 'select', 'enter', 'upload', 'configure', 'connect', 'action', 'result'],
+    },
+    {
+      dimension: 'aha-moment',
+      label: 'the aha moment',
+      prompt: 'When does the user feel the value for the first time?',
+      signals: ['aha', 'moment', 'value', 'feel', 'realize', 'see the', 'first time', 'wow', 'magic', 'instant', 'immediately', 'within', 'delight', 'surprise', 'powerful', 'clear'],
+    },
+    {
+      dimension: 'differentiator',
+      label: 'key differentiators',
+      prompt: 'What makes this better or different than alternatives?',
+      signals: ['different', 'unique', 'better', 'unlike', 'only', 'first', 'advantage', 'proprietary', 'novel', 'innovative', 'faster', 'easier', 'cheaper', 'more accurate', 'more reliable', 'competitive', 'edge'],
+    },
+  ],
+
+  'Why Us': [
+    {
+      dimension: 'assets',
+      label: 'existing assets',
+      prompt: 'What existing assets give you an advantage — data, distribution, brand?',
+      signals: ['asset', 'data', 'distribution', 'brand', 'technology', 'platform', 'ecosystem', 'customer base', 'relationship', 'partnership', 'infrastructure', 'existing', 'already', 'built', 'have'],
+    },
+    {
+      dimension: 'team',
+      label: 'team expertise',
+      prompt: 'What relevant expertise does your team bring?',
+      signals: ['team', 'expertise', 'experience', 'track record', 'built', 'shipped', 'background', 'talent', 'skill', 'domain', 'industry', 'year', 'previously', 'proven', 'hired', 'founded'],
+    },
+    {
+      dimension: 'moat',
+      label: 'the moat',
+      prompt: 'What makes this defensible over time — network effects, data, switching costs?',
+      signals: ['moat', 'defensible', 'barrier', 'network effect', 'switching cost', 'lock-in', 'data advantage', 'proprietary', 'patent', 'scale', 'flywheel', 'compound', 'accumulate', 'hard to copy', 'first mover'],
+    },
+  ],
+
+  'Business Model': [
+    {
+      dimension: 'revenue-model',
+      label: 'revenue model',
+      prompt: 'How does this make money — subscription, usage, transaction?',
+      signals: ['revenue', 'model', 'subscription', 'saas', 'usage', 'transaction', 'commission', 'license', 'recurring', 'one-time', 'hybrid', 'marketplace', 'freemium', 'pay', 'charge', 'monetize'],
+    },
+    {
+      dimension: 'pricing',
+      label: 'price point',
+      prompt: 'What\'s the proposed price point — and what comparable products charge?',
+      signals: ['price', 'pricing', 'cost', '$', 'per', 'month', 'year', 'seat', 'user', 'tier', 'plan', 'comparable', 'competitor', 'benchmark', 'charge', 'willing to pay', 'value'],
+    },
+    {
+      dimension: 'unit-economics',
+      label: 'unit economics',
+      prompt: 'What are the target unit economics — CAC, LTV, margins?',
+      signals: ['cac', 'ltv', 'lifetime value', 'margin', 'gross margin', 'unit economics', 'acquisition cost', 'payback', 'ratio', 'roi', 'blended', 'contribution', 'profitable', 'break even'],
+    },
+    {
+      dimension: 'projections',
+      label: 'revenue projections',
+      prompt: 'What are your 12-month and 36-month revenue projections?',
+      signals: ['project', 'forecast', 'estimate', 'revenue', 'arr', 'mrr', '12 month', '36 month', 'year 1', 'year 2', 'year 3', 'growth', 'scale', 'ramp', 'path to', 'trajectory'],
+    },
+  ],
+
+  'Go-to-Market': [
+    {
+      dimension: 'first-customers',
+      label: 'first customers',
+      prompt: 'Who are your first 10/100/1000 customers and how do you reach them?',
+      signals: ['first', 'initial', 'early', 'adopter', 'launch', 'beta', 'pilot', '10', '100', '1000', 'customer', 'segment', 'reach', 'target', 'outreach', 'existing', 'warm', 'network'],
+    },
+    {
+      dimension: 'distribution',
+      label: 'distribution channels',
+      prompt: 'What\'s the primary distribution channel — sales, product-led, partnerships?',
+      signals: ['distribution', 'channel', 'sales', 'product-led', 'plg', 'self-serve', 'partnership', 'marketplace', 'direct', 'indirect', 'outbound', 'inbound', 'referral', 'word of mouth', 'viral', 'content'],
+    },
+    {
+      dimension: 'validation',
+      label: 'early validation',
+      prompt: 'What early traction or validation do you have — waitlist, LOIs, pilots?',
+      signals: ['validation', 'traction', 'waitlist', 'loi', 'letter of intent', 'pilot', 'beta', 'design partner', 'proof', 'signal', 'interest', 'signed', 'committed', 'testing', 'feedback', 'promising'],
+    },
+  ],
+
+  'Roadmap & Milestones': [
+    {
+      dimension: 'phase-1',
+      label: 'Phase 1 (MVP)',
+      prompt: 'What ships in the first 0-3 months?',
+      signals: ['phase 1', 'mvp', '0-3', 'first', 'initial', 'launch', 'v1', 'core', 'basic', 'minimum', 'foundation', 'start', 'build', 'month 1', 'month 2', 'month 3', 'q1'],
+    },
+    {
+      dimension: 'expansion',
+      label: 'expansion phases',
+      prompt: 'What comes in Phase 2 and 3?',
+      signals: ['phase 2', 'phase 3', 'expand', 'iterate', 'enhance', 'scale', 'optimize', '3-6', '6-12', 'v2', 'v3', 'next', 'then', 'after', 'follow-up', 'advanced', 'additional'],
+    },
+    {
+      dimension: 'milestones',
+      label: 'key milestones',
+      prompt: 'What are the key milestones and decision points?',
+      signals: ['milestone', 'decision', 'gate', 'checkpoint', 'review', 'go/no-go', 'criteria', 'deliverable', 'launch', 'ship', 'demo', 'pilot', 'target', 'deadline', 'by', 'complete'],
+    },
+    {
+      dimension: 'kill-criteria',
+      label: 'kill criteria',
+      prompt: 'What would make you stop — what are the go/no-go gates?',
+      signals: ['kill', 'stop', 'abort', 'exit', 'no-go', 'criteria', 'threshold', 'if not', 'fail', 'below', 'worse than', 'evidence', 'signal', 'pivot', 'abandon', 'walk away', 'cut losses'],
+    },
+  ],
+
+  'The Ask': [
+    {
+      dimension: 'team',
+      label: 'team ask',
+      prompt: 'What roles and headcount do you need?',
+      signals: ['team', 'engineer', 'designer', 'pm', 'analyst', 'headcount', 'hire', 'staff', 'role', 'person', 'people', 'full-time', 'contractor', 'dedicated', 'allocate'],
+    },
+    {
+      dimension: 'budget',
+      label: 'budget ask',
+      prompt: 'What\'s the total budget — with breakdown?',
+      signals: ['budget', 'cost', '$', 'dollar', 'thousand', 'million', 'invest', 'spend', 'fund', 'allocat', 'infrastructure', 'marketing', 'development', 'total', 'breakdown'],
+    },
+    {
+      dimension: 'timeline',
+      label: 'decision timeline',
+      prompt: 'When do you need the decision and why?',
+      signals: ['decision', 'when', 'deadline', 'date', 'urgency', 'timing', 'before', 'by', 'window', 'need', 'soon', 'this week', 'this month', 'this quarter', 'asap', 'critical'],
+    },
+    {
+      dimension: 'deliverables',
+      label: 'what you\'ll deliver',
+      prompt: 'What concrete deliverables will you ship by when?',
+      signals: ['deliver', 'ship', 'build', 'launch', 'complete', 'milestone', 'output', 'result', 'by', 'within', 'month', 'quarter', 'demo', 'prototype', 'mvp', 'beta', 'ga', 'live'],
+    },
+  ],
+
+  // ─── Packaging Recommendation ───
+  'Current Packaging Assessment': [
+    {
+      dimension: 'current-tiers',
+      label: 'current tiers and pricing',
+      prompt: 'What are the current tiers, their prices, and what\'s included?',
+      signals: ['tier', 'plan', 'price', 'pricing', 'current', 'today', 'existing', 'free', 'pro', 'enterprise', 'basic', 'premium', 'include', 'feature', 'seat', 'limit'],
+    },
+    {
+      dimension: 'usage-data',
+      label: 'feature usage data',
+      prompt: 'Which features drive upgrades and which are underused?',
+      signals: ['usage', 'data', 'feature', 'adoption', 'active', 'used', 'unused', 'underused', 'popular', 'drive', 'upgrade', 'trigger', 'analytics', 'telemetry', 'engagement', 'stickiest'],
+    },
+    {
+      dimension: 'revenue',
+      label: 'revenue distribution',
+      prompt: 'How does revenue split across tiers?',
+      signals: ['revenue', 'distribution', 'split', 'share', '%', 'percent', 'arr', 'mrr', 'arpu', 'per tier', 'per plan', 'contribution', 'concentration', 'weighted', 'average'],
+    },
+    {
+      dimension: 'friction',
+      label: 'packaging friction',
+      prompt: 'Where do customers get confused or drop off in the upgrade funnel?',
+      signals: ['friction', 'confus', 'drop', 'churn', 'downgrade', 'complaint', 'feedback', 'barrier', 'blocker', 'unclear', 'complicated', 'too many', 'overlap', 'gap', 'funnel', 'conversion'],
+    },
+  ],
+
+  'Competitive Packaging Landscape': [
+    {
+      dimension: 'competitor-tiers',
+      label: 'competitor packaging',
+      prompt: 'How do competitors structure their tiers?',
+      signals: ['competitor', 'competition', 'rival', 'tier', 'plan', 'structure', 'package', 'model', 'offer', 'include', 'gate', 'free', 'paid', 'enterprise', 'pricing page'],
+    },
+    {
+      dimension: 'feature-parity',
+      label: 'feature parity analysis',
+      prompt: 'Where are you over or under-indexing on features per tier?',
+      signals: ['parity', 'comparison', 'over', 'under', 'gap', 'feature', 'include', 'miss', 'have', 'lack', 'behind', 'ahead', 'more', 'less', 'equivalent', 'match'],
+    },
+    {
+      dimension: 'trends',
+      label: 'packaging trends',
+      prompt: 'What packaging patterns are emerging in your category?',
+      signals: ['trend', 'emerging', 'pattern', 'shift', 'moving toward', 'industry', 'category', 'standard', 'norm', 'best practice', 'adoption', 'usage-based', 'outcome', 'modular', 'bundle'],
+    },
+    {
+      dimension: 'gaps',
+      label: 'exploitable gaps',
+      prompt: 'What do competitors gate high that you could offer lower?',
+      signals: ['gap', 'opportunity', 'exploit', 'advantage', 'offer', 'include', 'free', 'lower', 'accessible', 'competitive', 'differentiate', 'win', 'undercut', 'generous', 'value'],
+    },
+  ],
+
+  'Proposed Packaging': [
+    {
+      dimension: 'tiers',
+      label: 'tier structure',
+      prompt: 'What are the new tier names and who is each for?',
+      signals: ['tier', 'plan', 'name', 'free', 'starter', 'pro', 'business', 'enterprise', 'team', 'growth', 'persona', 'target', 'audience', 'segment', 'individual', 'small', 'mid', 'large'],
+    },
+    {
+      dimension: 'pricing',
+      label: 'price points',
+      prompt: 'What\'s the price point for each tier?',
+      signals: ['$', 'price', 'cost', 'charge', 'per month', '/mo', '/yr', 'annual', 'monthly', 'free', 'custom', 'contact', 'starting at', 'from', 'amount', 'discount'],
+    },
+    {
+      dimension: 'features-per-tier',
+      label: 'features per tier',
+      prompt: 'What features are included in each tier?',
+      signals: ['include', 'feature', 'capability', 'access', 'unlock', 'gate', 'limit', 'restriction', 'add', 'core', 'basic', 'advanced', 'premium', 'all', 'everything', 'plus'],
+    },
+    {
+      dimension: 'upgrade-trigger',
+      label: 'upgrade triggers',
+      prompt: 'What specific feature or limit motivates customers to upgrade?',
+      signals: ['upgrade', 'trigger', 'limit', 'cap', 'threshold', 'outgrow', 'need more', 'unlock', 'gate', 'motivate', 'drive', 'reason', 'why', 'compelling', 'must have', 'block'],
+    },
+  ],
+
+  'Feature Allocation Rationale': [
+    {
+      dimension: 'data-backing',
+      label: 'data supporting allocation',
+      prompt: 'What data supports putting each feature in its tier?',
+      signals: ['data', 'usage', 'analytics', 'pattern', 'evidence', 'research', 'survey', 'willingness', 'pay', 'adoption', 'correlation', 'found', 'showed', 'indicate', 'segment'],
+    },
+    {
+      dimension: 'table-stakes',
+      label: 'table stakes vs. premium',
+      prompt: 'Which features are table stakes and which justify premium pricing?',
+      signals: ['table stakes', 'basic', 'expect', 'standard', 'must have', 'premium', 'advanced', 'power', 'sophisticated', 'enterprise', 'value', 'willingness', 'justify', 'differentiate'],
+    },
+    {
+      dimension: 'triggers',
+      label: 'tier boundary triggers',
+      prompt: 'What are the upgrade triggers at each tier boundary?',
+      signals: ['trigger', 'boundary', 'upgrade', 'transition', 'move up', 'outgrow', 'need', 'want', 'require', 'limit', 'cap', 'exceed', 'gate', 'unlock', 'access', 'block'],
+    },
+    {
+      dimension: 'competitive',
+      label: 'competitive positioning',
+      prompt: 'Which features stay low-tier to remain competitive?',
+      signals: ['competitive', 'competitor', 'market', 'position', 'retain', 'attract', 'win', 'deal', 'sales', 'comparison', 'match', 'parity', 'table stakes', 'expectation', 'standard'],
+    },
+  ],
+
+  'Revenue & Adoption Impact': [
+    {
+      dimension: 'revenue-change',
+      label: 'expected revenue change',
+      prompt: 'What\'s the expected revenue impact by tier?',
+      signals: ['revenue', 'impact', 'change', 'increase', 'decrease', 'net', 'arr', 'mrr', 'arpu', 'expected', 'project', 'estimate', 'model', 'forecast', 'per tier', 'total', 'delta'],
+    },
+    {
+      dimension: 'migration',
+      label: 'customer migration',
+      prompt: 'What % of customers upgrade, downgrade, or stay?',
+      signals: ['migrate', 'migration', 'upgrade', 'downgrade', 'stay', 'remain', 'move', 'shift', 'percent', '%', 'distribution', 'expect', 'scenario', 'assume', 'model'],
+    },
+    {
+      dimension: 'scenarios',
+      label: 'scenario analysis',
+      prompt: 'What are the optimistic, base, and conservative scenarios?',
+      signals: ['scenario', 'optimistic', 'base', 'conservative', 'best', 'worst', 'likely', 'range', 'sensitivity', 'upside', 'downside', 'variable', 'assumption', 'if'],
+    },
+    {
+      dimension: 'breakeven',
+      label: 'break-even timeline',
+      prompt: 'When does any short-term revenue loss get recovered?',
+      signals: ['break even', 'breakeven', 'recover', 'recoup', 'payback', 'timeline', 'when', 'months', 'quarters', 'offset', 'net positive', 'crossover', 'roi', 'return'],
+    },
+  ],
+
+  'Migration Plan': [
+    {
+      dimension: 'grandfathering',
+      label: 'grandfathering policy',
+      prompt: 'Who keeps current pricing and for how long?',
+      signals: ['grandfather', 'legacy', 'existing', 'current', 'keep', 'maintain', 'honor', 'lock', 'protect', 'exempt', 'grace', 'period', 'duration', 'until', 'expir', 'renew'],
+    },
+    {
+      dimension: 'communication',
+      label: 'communication timeline',
+      prompt: 'What\'s the rollout sequence — internal, beta, all customers?',
+      signals: ['communication', 'announce', 'notify', 'rollout', 'phase', 'sequence', 'internal', 'beta', 'pilot', 'all', 'general', 'email', 'in-app', 'blog', 'timeline', 'week', 'month', 'advance'],
+    },
+    {
+      dimension: 'tools',
+      label: 'migration tools',
+      prompt: 'Will migration be self-serve or CS-assisted?',
+      signals: ['self-serve', 'automated', 'tool', 'portal', 'dashboard', 'cs', 'customer success', 'assisted', 'manual', 'guided', 'wizard', 'flow', 'upgrade path', 'downgrade path'],
+    },
+    {
+      dimension: 'rollback',
+      label: 'rollback plan',
+      prompt: 'What triggers a rollback and how does it work?',
+      signals: ['rollback', 'revert', 'undo', 'if', 'fail', 'worse', 'threshold', 'trigger', 'plan b', 'backup', 'contingency', 'fallback', 'abort', 'exit', 'criteria', 'signal'],
+    },
+  ],
+
+  'Recommendation & Decision Points': [
+    {
+      dimension: 'recommendation',
+      label: 'the recommendation',
+      prompt: 'Which packaging option do you recommend and why?',
+      signals: ['recommend', 'propose', 'suggest', 'endorse', 'option', 'choice', 'prefer', 'best', 'should', 'believe', 'advocate', 'go with', 'because', 'rationale', 'reason'],
+    },
+    {
+      dimension: 'decision',
+      label: 'what needs deciding',
+      prompt: 'What decision do you need from leadership?',
+      signals: ['decision', 'approve', 'sign off', 'green light', 'leadership', 'executive', 'stakeholder', 'need from', 'ask', 'request', 'authority', 'permission', 'alignment'],
+    },
+    {
+      dimension: 'open-questions',
+      label: 'open questions',
+      prompt: 'What questions still need resolution?',
+      signals: ['question', 'open', 'unresolved', 'tbd', 'unclear', 'need input', 'discuss', 'debate', 'explore', 'investigate', 'research', 'pending', 'determine', 'figure out'],
+    },
+    {
+      dimension: 'success-criteria',
+      label: 'success criteria',
+      prompt: 'How will you measure success at 30/60/90 days?',
+      signals: ['success', 'criteria', 'metric', 'measure', '30 day', '60 day', '90 day', 'evaluate', 'track', 'monitor', 'report', 'review', 'kpi', 'target', 'goal', 'benchmark'],
+    },
+  ],
 };
 
 /**
@@ -893,6 +1837,11 @@ function isDimensionCovered(text, dimension) {
  * and specifically asks for the missing piece — not a generic question.
  * Returns null if all dimensions are covered (section is complete).
  */
+/**
+ * Returns { question, recommendation } for ghost text display.
+ * - question: a thinking prompt to challenge the writer
+ * - recommendation: a suggested sentence they can Tab to accept
+ */
 export function getGhostPrompt(sectionTitle, userText, prefaceContext) {
   const dimensions = SECTION_DIMENSIONS[sectionTitle];
   if (!dimensions) return null;
@@ -900,9 +1849,11 @@ export function getGhostPrompt(sectionTitle, userText, prefaceContext) {
   // Extract a short product/project name from preface for personalization
   const productName = extractProductName(prefaceContext);
 
-  // If empty, return the first dimension's prompt
+  // If empty, return the first dimension's prompt with a recommendation
   if (!userText || userText.trim().length === 0) {
-    return personalizePrompt(dimensions[0].prompt, productName);
+    const question = personalizePrompt(dimensions[0].prompt, productName);
+    const recommendation = buildRecommendation(dimensions[0], productName);
+    return { question, recommendation };
   }
 
   // Partition into covered and missing
@@ -921,15 +1872,65 @@ export function getGhostPrompt(sectionTitle, userText, prefaceContext) {
 
   const nextDim = missing[0];
   const nextPrompt = personalizePrompt(nextDim.prompt, productName);
+  const recommendation = buildRecommendation(nextDim, productName);
 
   // If the writer has covered some dimensions, acknowledge what's done
-  // and specifically ask for the missing piece
   if (covered.length > 0) {
     const coveredLabels = covered.map((d) => d.label || d.dimension.replace(/-/g, ' ')).join(', ');
-    return `You've covered ${coveredLabels}. Now add: ${lowercaseFirst(nextPrompt)}`;
+    return {
+      question: `You've covered ${coveredLabels}. ${nextPrompt}`,
+      recommendation,
+    };
   }
 
-  return nextPrompt;
+  return { question: nextPrompt, recommendation };
+}
+
+/**
+ * Build a recommendation sentence from a dimension definition.
+ */
+function buildRecommendation(dim, productName) {
+  const name = productName || 'this feature';
+  const label = dim.label || dim.dimension.replace(/-/g, ' ');
+
+  // Map common dimension types to concrete recommendation starters
+  const starters = {
+    'product': `${name} is a`,
+    'customer': `It is built for`,
+    'benefit': `The primary benefit is`,
+    'who': `The target users are`,
+    'what': `The core problem is`,
+    'frequency': `This affects users`,
+    'impact': `Without a solution,`,
+    'workaround': `Today, users work around this by`,
+    'approach': `Our approach is to`,
+    'scope': `The scope includes`,
+    'timeline': `We plan to deliver this within`,
+    'metric': `We will measure success by`,
+    'risk': `The biggest risk is`,
+    'tradeoff': `We are choosing to prioritize`,
+    'investment': `This requires an investment of`,
+    'revenue': `The expected revenue impact is`,
+    'alternative': `We considered`,
+    'recommendation': `We recommend`,
+    'rationale': `The rationale is`,
+    'next-steps': `As a next step,`,
+    'context': `For context,`,
+    'evidence': `The data shows that`,
+    'cost': `The estimated cost is`,
+    'dependencies': `This depends on`,
+  };
+
+  // Try exact dimension match, then partial match
+  const starter = starters[dim.dimension] || starters[label] || null;
+  if (starter) return `${starter} ...`;
+  // Generic fallback
+  return `${capitalizeFirst(label)}: ...`;
+}
+
+function capitalizeFirst(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function lowercaseFirst(str) {
