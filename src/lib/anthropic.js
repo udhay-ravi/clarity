@@ -49,18 +49,20 @@ export async function callClaude({ system, userMessage, maxTokens = 60, signal }
 }
 
 export async function getGhostText({ sectionTitle, documentType, prefaceContext, userText, coveredDimensions, missingDimensions, signal }) {
-  const system = `You are a writing coach for product managers. Your job is NOT to write for them — your job is to give them the single best next sentence or question that helps them think about what they should say next.
+  const system = `You are a writing coach for product managers. You help them think, then suggest what to write.
+
+Return EXACTLY two lines:
+Q: A sharp question that makes the PM think about what the next sentence should say. Maximum 15 words.
+R: A recommended sentence they could write next. Use specifics from the document context. Maximum 25 words. Write it as a real sentence (not a question, not a bracket template).
 
 Rules:
-- Return ONLY a single sentence or question. Maximum 20 words.
-- Make it a PROMPT for their thinking, not a finished statement.
-- Use the document context (product name, value prop, etc.) to make your prompt specific and relevant.
-- You are told which structural elements the user has already covered and which are still missing. Focus on the most important missing element.
-- Acknowledge what they have covered — don't repeat it. Ask about what's next.
-- Never complete their thought for them. Always make them decide.
-- Tone: smart, direct, collegial. Not formal, not sycophantic.
-- Target readability: grade level 14 (college sophomore). Coach accordingly.
-- Return ONLY the sentence, no preamble, no explanation.`;
+- The Q should challenge their thinking — don't ask obvious questions.
+- The R should be a strong starting point they can edit, not a final answer.
+- Use the document context (product name, value prop, etc.) to make both Q and R specific and relevant.
+- Focus on the most important missing structural element.
+- Acknowledge what they have covered — don't repeat it.
+- Tone: smart, direct, collegial.
+- Return ONLY the two lines starting with Q: and R: — no preamble, no explanation.`;
 
   const contextLine = prefaceContext ? `\nDocument context: ${prefaceContext}` : '';
   const structureLine = coveredDimensions && missingDimensions
@@ -70,9 +72,9 @@ Rules:
 Document type: ${documentType || 'General'}${contextLine}${structureLine}
 What the user has written so far in this section: ${userText || '(empty)'}
 
-Give me the next ghost text prompt focusing on the most important missing element.`;
+Give me the Q and R for the next ghost text focusing on the most important missing element.`;
 
-  return callClaude({ system, userMessage, maxTokens: 60, signal });
+  return callClaude({ system, userMessage, maxTokens: 120, signal });
 }
 
 export async function getTemplateExample({ sectionTitle, templateStructure, prefaceContext, signal }) {

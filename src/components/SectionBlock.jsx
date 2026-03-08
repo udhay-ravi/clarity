@@ -75,9 +75,26 @@ export default function SectionBlock({
   // Section is structurally complete when all dimensions are covered
   const sectionComplete = totalDimensions > 0 && coveredCount === totalDimensions;
 
-  // When body has content and dimensions remain → show dimension prompt (tab-to-accept)
+  // Parse API ghost text into { question, recommendation } format
+  const parsedApiGhost = useMemo(() => {
+    if (!apiGhostText) return null;
+    const qMatch = apiGhostText.match(/^Q:\s*(.+)/m);
+    const rMatch = apiGhostText.match(/^R:\s*(.+)/m);
+    if (qMatch && rMatch) {
+      return { question: qMatch[1].trim(), recommendation: rMatch[1].trim() };
+    }
+    // Fallback: if AI didn't return Q/R format, treat as question only
+    return { question: apiGhostText, recommendation: null };
+  }, [apiGhostText]);
+
+  // Active ghost object: { question, recommendation } — from API or template
   // Stop prompting once the section meets its structural baseline
-  const activeGhostText = isFocused && hasBody && !sectionComplete ? (apiGhostText || templatePrompt) : null;
+  const activeGhost = useMemo(() => {
+    if (!isFocused || !hasBody || sectionComplete) return null;
+    if (parsedApiGhost) return parsedApiGhost;
+    if (templatePrompt) return templatePrompt; // already { question, recommendation }
+    return null;
+  }, [isFocused, hasBody, sectionComplete, parsedApiGhost, templatePrompt]);
 
   // Close clarity results when another section's clarity check opens
   useEffect(() => {
@@ -112,14 +129,16 @@ export default function SectionBlock({
   }, [section, onUpdate, trigger, dismiss, sectionComplete]);
 
   const acceptGhostText = useCallback(() => {
-    if (apiGhostText) return acceptApi();
-    if (templatePrompt) return templatePrompt;
-    return null;
-  }, [apiGhostText, acceptApi, templatePrompt]);
+    if (!activeGhost) return null;
+    // Accept only the recommendation (R) part
+    const rec = activeGhost.recommendation;
+    if (apiGhostText) acceptApi(); // clear API state
+    return rec || null;
+  }, [activeGhost, apiGhostText, acceptApi]);
 
   const handleBodyKeyDown = useCallback(
     (e) => {
-      if (e.key === 'Tab' && activeGhostText) {
+      if (e.key === 'Tab' && activeGhost?.recommendation) {
         e.preventDefault();
         const accepted = acceptGhostText();
         if (accepted && bodyRef.current) {
@@ -142,7 +161,7 @@ export default function SectionBlock({
         dismiss();
       }
     },
-    [activeGhostText, acceptGhostText, apiGhostText, dismiss, section, onUpdate, trigger]
+    [activeGhost, acceptGhostText, apiGhostText, dismiss, section, onUpdate, trigger]
   );
 
   const handleTitleChange = useCallback(() => {
@@ -305,15 +324,24 @@ export default function SectionBlock({
             className="min-h-[80px] text-base leading-relaxed text-text outline-none font-[var(--font-body)]"
           />
 
-          {/* Dimension prompt — shown when section has content */}
-          {activeGhostText && (
-            <div className="pointer-events-none animate-ghost-in">
-              <div className="mt-1 text-base leading-relaxed text-ghost italic font-[var(--font-body)]">
-                {activeGhostText}
-                <span className="ml-2 text-xs font-[var(--font-ui)] not-italic text-ghost/60 bg-bg px-1.5 py-0.5 rounded">
-                  Tab to accept
-                </span>
-              </div>
+          {/* Ghost coaching — Q (thinking prompt) and R (recommended sentence) */}
+          {activeGhost && (
+            <div className="pointer-events-none animate-ghost-in mt-2 space-y-1">
+              {activeGhost.question && (
+                <div className="text-sm leading-relaxed text-ghost/70 font-[var(--font-ui)]">
+                  <span className="text-amber/70 font-semibold mr-1">Q:</span>
+                  {activeGhost.question}
+                </div>
+              )}
+              {activeGhost.recommendation && (
+                <div className="text-base leading-relaxed text-ghost italic font-[var(--font-body)]">
+                  <span className="not-italic text-amber/70 font-semibold font-[var(--font-ui)] text-sm mr-1">R:</span>
+                  {activeGhost.recommendation}
+                  <span className="ml-2 text-xs font-[var(--font-ui)] not-italic text-ghost/60 bg-bg px-1.5 py-0.5 rounded">
+                    Tab to accept
+                  </span>
+                </div>
+              )}
             </div>
           )}
         </div>

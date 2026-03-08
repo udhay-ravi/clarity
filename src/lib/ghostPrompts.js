@@ -1837,6 +1837,11 @@ function isDimensionCovered(text, dimension) {
  * and specifically asks for the missing piece — not a generic question.
  * Returns null if all dimensions are covered (section is complete).
  */
+/**
+ * Returns { question, recommendation } for ghost text display.
+ * - question: a thinking prompt to challenge the writer
+ * - recommendation: a suggested sentence they can Tab to accept
+ */
 export function getGhostPrompt(sectionTitle, userText, prefaceContext) {
   const dimensions = SECTION_DIMENSIONS[sectionTitle];
   if (!dimensions) return null;
@@ -1844,9 +1849,11 @@ export function getGhostPrompt(sectionTitle, userText, prefaceContext) {
   // Extract a short product/project name from preface for personalization
   const productName = extractProductName(prefaceContext);
 
-  // If empty, return the first dimension's prompt
+  // If empty, return the first dimension's prompt with a recommendation
   if (!userText || userText.trim().length === 0) {
-    return personalizePrompt(dimensions[0].prompt, productName);
+    const question = personalizePrompt(dimensions[0].prompt, productName);
+    const recommendation = buildRecommendation(dimensions[0], productName);
+    return { question, recommendation };
   }
 
   // Partition into covered and missing
@@ -1865,15 +1872,65 @@ export function getGhostPrompt(sectionTitle, userText, prefaceContext) {
 
   const nextDim = missing[0];
   const nextPrompt = personalizePrompt(nextDim.prompt, productName);
+  const recommendation = buildRecommendation(nextDim, productName);
 
   // If the writer has covered some dimensions, acknowledge what's done
-  // and specifically ask for the missing piece
   if (covered.length > 0) {
     const coveredLabels = covered.map((d) => d.label || d.dimension.replace(/-/g, ' ')).join(', ');
-    return `You've covered ${coveredLabels}. Now add: ${lowercaseFirst(nextPrompt)}`;
+    return {
+      question: `You've covered ${coveredLabels}. ${nextPrompt}`,
+      recommendation,
+    };
   }
 
-  return nextPrompt;
+  return { question: nextPrompt, recommendation };
+}
+
+/**
+ * Build a recommendation sentence from a dimension definition.
+ */
+function buildRecommendation(dim, productName) {
+  const name = productName || 'this feature';
+  const label = dim.label || dim.dimension.replace(/-/g, ' ');
+
+  // Map common dimension types to concrete recommendation starters
+  const starters = {
+    'product': `${name} is a`,
+    'customer': `It is built for`,
+    'benefit': `The primary benefit is`,
+    'who': `The target users are`,
+    'what': `The core problem is`,
+    'frequency': `This affects users`,
+    'impact': `Without a solution,`,
+    'workaround': `Today, users work around this by`,
+    'approach': `Our approach is to`,
+    'scope': `The scope includes`,
+    'timeline': `We plan to deliver this within`,
+    'metric': `We will measure success by`,
+    'risk': `The biggest risk is`,
+    'tradeoff': `We are choosing to prioritize`,
+    'investment': `This requires an investment of`,
+    'revenue': `The expected revenue impact is`,
+    'alternative': `We considered`,
+    'recommendation': `We recommend`,
+    'rationale': `The rationale is`,
+    'next-steps': `As a next step,`,
+    'context': `For context,`,
+    'evidence': `The data shows that`,
+    'cost': `The estimated cost is`,
+    'dependencies': `This depends on`,
+  };
+
+  // Try exact dimension match, then partial match
+  const starter = starters[dim.dimension] || starters[label] || null;
+  if (starter) return `${starter} ...`;
+  // Generic fallback
+  return `${capitalizeFirst(label)}: ...`;
+}
+
+function capitalizeFirst(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function lowercaseFirst(str) {
