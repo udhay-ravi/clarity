@@ -1,10 +1,11 @@
 import { useEffect, useMemo } from 'react';
-import { LayoutTemplate, Sparkles, Loader2 } from 'lucide-react';
+import { LayoutTemplate, Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { getGhostParagraph } from '../lib/ghostParagraphs';
 import { useTemplateExample } from '../hooks/useTemplateExample';
+import { isAiEnabled } from '../lib/ai-provider';
 
 export default function StructureGuide({ focusedSection, preface, documentType }) {
-  const { example, loading, fetchExample, clear } = useTemplateExample();
+  const { example, loading, failed, errorMsg, fetchExample, retry, clear } = useTemplateExample();
 
   // Build preface summary for template personalization
   const prefaceSummary = useMemo(() => {
@@ -35,6 +36,8 @@ export default function StructureGuide({ focusedSection, preface, documentType }
 
   // Don't render if no focused section or no template for this section
   if (!focusedSection || !template) return null;
+
+  const aiEnabled = isAiEnabled();
 
   return (
     <div className="animate-nudge-in mb-5">
@@ -78,9 +81,37 @@ export default function StructureGuide({ focusedSection, preface, documentType }
           <div className="text-[13px] leading-relaxed text-text/70 font-[var(--font-body)] whitespace-pre-line">
             {example}
           </div>
-        ) : (
+        ) : failed ? (
+          <div className="space-y-2">
+            <div className="text-xs text-ghost font-[var(--font-ui)]">
+              {errorMsg && errorMsg.includes('not found')
+                ? 'Model not found. Check your Ollama model in Settings.'
+                : 'Could not generate example. The AI model may be loading.'}
+            </div>
+            <button
+              onClick={retry}
+              className="flex items-center gap-1.5 text-[11px] font-[var(--font-ui)] text-amber hover:text-amber/80 transition-colors cursor-pointer"
+            >
+              <RefreshCw size={10} />
+              Try again
+            </button>
+          </div>
+        ) : !aiEnabled ? (
           <div className="text-xs text-ghost italic font-[var(--font-ui)]">
-            Add an API key and product context to see a personalized example.
+            Set up an AI provider in Settings to see a personalized example.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="text-xs text-ghost italic font-[var(--font-ui)]">
+              Example not available.
+            </div>
+            <button
+              onClick={retry}
+              className="flex items-center gap-1.5 text-[11px] font-[var(--font-ui)] text-amber hover:text-amber/80 transition-colors cursor-pointer"
+            >
+              <RefreshCw size={10} />
+              Generate example
+            </button>
           </div>
         )}
       </div>

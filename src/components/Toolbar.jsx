@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FilePlus, Check, Library } from 'lucide-react';
+import { FilePlus, Check, Library, Settings } from 'lucide-react';
 import ExportMenu from './ExportMenu';
 
 export default function Toolbar({
@@ -11,6 +11,7 @@ export default function Toolbar({
   onExportAll,
   onNewDoc,
   onGoToLibrary,
+  onOpenSettings,
   saveStatus,
   readabilityGrade,
   readabilityFeedback,
@@ -82,6 +83,13 @@ export default function Toolbar({
           >
             <Library size={16} />
             My Docs
+          </button>
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-white rounded-md transition-colors cursor-pointer"
+            title="Settings"
+          >
+            <Settings size={16} />
           </button>
         </div>
       </div>

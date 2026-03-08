@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FilePlus, Trash2, FileText, Clock, Type } from 'lucide-react';
+import { FilePlus, Trash2, FileText, Clock, Type, Settings } from 'lucide-react';
 
 function formatRelativeDate(ts) {
   if (!ts) return '';
@@ -34,7 +34,7 @@ function typeBadge(type) {
   );
 }
 
-export default function DocumentLibrary({ docs, onOpenDoc, onNewDoc, onDeleteDoc }) {
+export default function DocumentLibrary({ docs, onOpenDoc, onNewDoc, onDeleteDoc, onOpenSettings }) {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const sorted = [...docs].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
@@ -49,13 +49,22 @@ export default function DocumentLibrary({ docs, onOpenDoc, onNewDoc, onDeleteDoc
             {docs.length} {docs.length === 1 ? 'document' : 'documents'}
           </p>
         </div>
-        <button
-          onClick={onNewDoc}
-          className="flex items-center gap-2 px-4 py-2.5 bg-amber text-white font-[var(--font-ui)] font-medium text-sm rounded-lg hover:bg-amber/90 transition-colors cursor-pointer"
-        >
-          <FilePlus size={16} />
-          New Document
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenSettings}
+            className="p-2.5 text-ghost hover:text-text hover:bg-sidebar-bg rounded-lg transition-colors cursor-pointer"
+            title="Settings"
+          >
+            <Settings size={16} />
+          </button>
+          <button
+            onClick={onNewDoc}
+            className="flex items-center gap-2 px-4 py-2.5 bg-amber text-white font-[var(--font-ui)] font-medium text-sm rounded-lg hover:bg-amber/90 transition-colors cursor-pointer"
+          >
+            <FilePlus size={16} />
+            New Document
+          </button>
+        </div>
       </div>
 
       {/* Doc list */}

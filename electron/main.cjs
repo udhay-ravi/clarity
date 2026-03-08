@@ -1,5 +1,6 @@
-const { app, BrowserWindow, Menu, shell } = require('electron');
+const { app, BrowserWindow, Menu, shell, ipcMain } = require('electron');
 const path = require('path');
+const ollamaManager = require('./ollama-manager.cjs');
 
 const isDev = !app.isPackaged;
 
@@ -153,4 +154,23 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// ── Ollama IPC Handlers ──
+
+ipcMain.handle('ollama:setup', async (_event, modelName) => {
+  return ollamaManager.setupOllama(modelName, mainWindow);
+});
+
+ipcMain.handle('ollama:get-status', async () => {
+  return ollamaManager.getStatus();
+});
+
+ipcMain.handle('ollama:auto-start', async () => {
+  return ollamaManager.autoStart();
+});
+
+// Stop Ollama server when app quits
+app.on('will-quit', async () => {
+  await ollamaManager.cleanup();
 });

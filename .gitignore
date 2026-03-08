@@ -15,6 +15,7 @@ dist-ssr
 # Electron
 release/
 *.dmg
+.ollama-dev/
 
 # Editor directories and files
 .vscode/*
