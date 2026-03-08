@@ -231,6 +231,15 @@ export default function App() {
     }
   }, [document]);
 
+  const handleGoToLanding = useCallback(() => {
+    if (document) {
+      saveDocument(document);
+    }
+    setDocsIndex(loadIndex());
+    setDocument(null);
+    setScreen('landing');
+  }, [document]);
+
   const handleGoToLibrary = useCallback(() => {
     // Save current doc before leaving
     if (document) {
@@ -314,6 +323,7 @@ export default function App() {
           onNewDoc={handleNewDocFromLibrary}
           onDeleteDoc={handleDeleteDoc}
           onOpenSettings={handleOpenSettings}
+          onGoToLanding={handleGoToLanding}
         />
         {settingsOverlay}
       </>
@@ -323,7 +333,7 @@ export default function App() {
   if (screen === 'welcome') {
     return (
       <>
-        <WelcomeScreen onStart={handleStart} onOpenSettings={handleOpenSettings} />
+        <WelcomeScreen onStart={handleStart} onOpenSettings={handleOpenSettings} onGoToLanding={handleGoToLanding} />
         {settingsOverlay}
       </>
     );
@@ -354,6 +364,7 @@ export default function App() {
           onExportAll={handleExportAll}
           onNewDoc={handleNewDoc}
           onGoToLibrary={handleGoToLibrary}
+          onGoToLanding={handleGoToLanding}
           onOpenSettings={handleOpenSettings}
           saveStatus={saveStatus}
           readabilityGrade={readabilityGrade}

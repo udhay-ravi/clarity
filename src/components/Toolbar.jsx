@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FilePlus, Check, Library, Settings } from 'lucide-react';
+import { PenLine, FilePlus, Check, Library, Settings } from 'lucide-react';
 import ExportMenu from './ExportMenu';
 
 export default function Toolbar({
@@ -11,6 +11,7 @@ export default function Toolbar({
   onExportAll,
   onNewDoc,
   onGoToLibrary,
+  onGoToLanding,
   onOpenSettings,
   saveStatus,
   readabilityGrade,
@@ -32,6 +33,15 @@ export default function Toolbar({
     <div className="sticky top-0 z-10 bg-bg/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
+          <button
+            onClick={onGoToLanding}
+            className="flex items-center gap-1.5 shrink-0 hover:opacity-70 transition-opacity cursor-pointer"
+            title="Back to Home"
+          >
+            <PenLine className="w-5 h-5 text-amber" />
+            <span className="text-sm font-bold font-[var(--font-ui)] text-text tracking-tight">Clarity</span>
+          </button>
+          <div className="w-px h-5 bg-border shrink-0" />
           <div
             ref={titleRef}
             contentEditable
