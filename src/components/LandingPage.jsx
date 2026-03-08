@@ -78,8 +78,8 @@ export default function LandingPage({ onGetStarted }) {
           />
           <ValueCard
             icon={<LayoutTemplate size={20} />}
-            title="6 PM Templates"
-            description="PRD, One-Pager, Launch Brief, Competitive Analysis, Strategy Doc, and Retro — ready to go."
+            title="11 PM Templates"
+            description="PRFAQ, PRD, Product Pitch, Pricing Proposal, Packaging Rec, One-Pager, Launch Brief, and more — ready to go."
           />
           <ValueCard
             icon={<Sparkles size={20} />}

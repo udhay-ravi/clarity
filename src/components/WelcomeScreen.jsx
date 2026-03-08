@@ -360,7 +360,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings }) {
 
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm font-[var(--font-ui)] text-ghost">
-                Try: product requirement document, one-pager, launch brief, competitive analysis
+                Try: PRFAQ, PRD, product pitch, pricing proposal, packaging, one-pager, launch brief
               </p>
               <button
                 onClick={onOpenSettings || (() => setStep('provider'))}
