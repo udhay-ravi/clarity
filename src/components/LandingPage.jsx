@@ -37,7 +37,7 @@ export default function LandingPage({ onGetStarted }) {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-light/60 border border-amber/20 mb-8">
           <Zap size={13} className="text-amber" />
           <span className="text-xs font-[var(--font-ui)] font-medium text-amber">
-            AI-powered writing coach for PMs
+            AI-powered writing assistant for PMs
           </span>
         </div>
 
@@ -195,7 +195,7 @@ export default function LandingPage({ onGetStarted }) {
             </span>
           </div>
           <p className="text-xs font-[var(--font-ui)] text-ghost/60">
-            Open source PM writing coach &middot; Built with React &amp; Vite
+            Open source PM writing assistant &middot; Built with React &amp; Vite
           </p>
         </div>
       </footer>

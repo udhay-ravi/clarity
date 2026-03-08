@@ -49,7 +49,7 @@ export async function callClaude({ system, userMessage, maxTokens = 60, signal }
 }
 
 export async function getGhostText({ sectionTitle, documentType, prefaceContext, userText, coveredDimensions, missingDimensions, signal }) {
-  const system = `You are a writing coach for product managers. You help them think, then suggest what to write.
+  const system = `You are a writing assistant for product managers. You help them think, then suggest what to write.
 
 Return EXACTLY two lines:
 Q: A sharp question that makes the PM think about what the next sentence should say. Maximum 15 words.
@@ -78,7 +78,7 @@ Give me the Q and R for the next ghost text focusing on the most important missi
 }
 
 export async function getTemplateExample({ sectionTitle, templateStructure, prefaceContext, signal }) {
-  const system = `You are a PM writing coach. Given a section template with [bracket placeholders] and product context, generate a realistic filled-in example showing what a strong version of this section looks like.
+  const system = `You are a PM writing assistant. Given a section template with [bracket placeholders] and product context, generate a realistic filled-in example showing what a strong version of this section looks like.
 
 Rules:
 - Fill each [bracket placeholder] with specific, realistic content based on the product context.
@@ -99,7 +99,7 @@ Generate a filled-in example.`;
 }
 
 export async function getClarityCheck({ sectionTitle, documentType, sectionText, signal }) {
-  const system = `You are a writing coach for product managers. Your job is to give sharp, specific observations about one section of a PM document.
+  const system = `You are a writing assistant for product managers. Your job is to give sharp, specific observations about one section of a PM document.
 
 Rules:
 - Identify 1 to 3 specific clarity problems in the text. Focus on thinking quality, not style.
@@ -121,7 +121,7 @@ Give me a Clarity Check.`;
 }
 
 export async function getCoachingNudge({ documentContent, signal }) {
-  const system = `You are an expert PM writing coach reviewing a document in progress.
+  const system = `You are an expert PM writing assistant reviewing a document in progress.
 Look at what the user has written and identify ONE specific weakness in their thinking — not their writing style.
 Return a single coaching observation as a short, direct question (max 15 words).
 Focus on: missing user context, unclear success criteria, solution-before-problem, missing tradeoffs, vague scope.

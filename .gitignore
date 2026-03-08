@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment
+.env
+.env.local
+.env.production
+
 # Electron
 release/
 *.dmg

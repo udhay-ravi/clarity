@@ -1,6 +1,6 @@
-# Clarity — PM Writing Coach
+# Clarity — AI Writing Assistant for PMs
 
-A writing coach for product managers that runs in your browser. Clarity provides 11 structured templates, real-time coaching, and AI-powered ghost text so you ship clearer PRDs, PRFAQs, one-pagers, pricing proposals, and more.
+An AI-powered writing assistant for product managers that runs in your browser. Clarity provides 11 structured templates, real-time coaching, and AI-powered ghost text so you ship clearer PRDs, PRFAQs, one-pagers, pricing proposals, and more.
 
 > **Other AI tools write for you. Clarity makes you think.**
 
@@ -32,6 +32,7 @@ Opens at **http://127.0.0.1:5181**. No account needed. All data stays in your br
 - **Multi-format export** — Markdown, PDF, and Word (.docx)
 - **Document library** — auto-saved locally via localStorage, documents persist across sessions
 - **Product landing page** — branded home page with feature overview
+- **Google login** — optional Firebase Auth gating for deployed instances
 
 ## How It Works
 
@@ -58,6 +59,45 @@ Clarity works without AI — templates, structure guides, and coaching nudges ar
 
 1. Get an API key from [Anthropic Console](https://console.anthropic.com)
 2. In Clarity Settings, select **Claude API** and enter your key
+
+## Deploy to Web (with Google Login)
+
+Clarity can be deployed to a public URL with Google sign-in using Firebase Auth + Vercel.
+
+### 1. Create a Firebase Project
+
+1. Go to [Firebase Console](https://console.firebase.google.com) → **Add Project**
+2. Go to **Authentication** → **Sign-in method** → enable **Google**
+3. Go to **Project Settings** → **Your apps** → click the web icon (`</>`) → register app
+4. Copy the config values
+
+### 2. Set Environment Variables
+
+Create a `.env` file (or set in Vercel dashboard):
+
+```
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123:web:abc
+```
+
+### 3. Deploy to Vercel
+
+```bash
+npm i -g vercel
+vercel
+```
+
+Or connect the GitHub repo at [vercel.com/new](https://vercel.com/new) — it auto-detects Vite and deploys on every push. Add the `VITE_FIREBASE_*` environment variables in the Vercel dashboard.
+
+### 4. Add Your Domain to Firebase
+
+In Firebase Console → **Authentication** → **Settings** → **Authorized domains**, add your Vercel URL (e.g. `clarity-abc.vercel.app`).
+
+> Without Firebase env vars, the app runs in open mode (no login required). This is the default for local development.
 
 ## Local Storage
 
@@ -94,9 +134,11 @@ Clarity is not yet code-signed. On first launch, right-click the app → **Open*
 ## Architecture
 
 - **React 19** + **Vite 7** + **Tailwind CSS v4**
+- **Firebase Auth** (optional) — Google sign-in for deployed instances
 - **Electron** (optional) — macOS desktop shell with auto-managed Ollama lifecycle
 - All data stored locally (`localStorage`) — no server required
 - AI powered by **Ollama** (local) or **Anthropic Claude API** (cloud) — your choice
+- Deployable to **Vercel** with zero config
 - Fonts bundled locally (DM Sans + Lora) — works offline
 
 ## License
