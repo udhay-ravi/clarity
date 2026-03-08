@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import LandingPage from './components/LandingPage';
 import WelcomeScreen from './components/WelcomeScreen';
 import PrefaceScreen from './components/PrefaceScreen';
 import DocumentEditor from './components/DocumentEditor';
@@ -79,10 +80,14 @@ export default function App() {
     const index = loadIndex();
     setDocsIndex(index);
 
+    // Check if user has visited before (has docs or has set a provider)
+    const hasVisited = index.docs.length > 0 || localStorage.getItem('clarity-ai-provider');
     if (index.docs.length > 0) {
       setScreen('library');
-    } else {
+    } else if (hasVisited) {
       setScreen('welcome');
+    } else {
+      setScreen('landing');
     }
 
     // Auto-start Ollama server in Electron if provider is 'ollama'
@@ -297,6 +302,10 @@ export default function App() {
   // Render
   // ---------------------------------------------------------------------------
   if (screen === 'loading') return null;
+
+  if (screen === 'landing') {
+    return <LandingPage onGetStarted={() => setScreen('welcome')} />;
+  }
 
   const settingsOverlay = showSettings ? <SettingsModal onClose={handleCloseSettings} /> : null;
 
