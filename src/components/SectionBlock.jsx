@@ -321,7 +321,8 @@ export default function SectionBlock({
             onFocus={handleBodyFocus}
             onBlur={handleBodyBlur}
             data-placeholder={section.placeholder || 'Start writing...'}
-            className="min-h-[80px] text-base leading-relaxed text-text outline-none font-[var(--font-body)]"
+            className="min-h-[80px] text-text outline-none"
+            style={{ fontFamily: 'var(--editor-font, var(--font-body))', fontSize: 'var(--editor-size, 16px)', lineHeight: 'var(--editor-line-height, 1.75)' }}
           />
 
           {/* Ghost coaching — Q (thinking prompt) and R (recommended sentence) */}

@@ -4,7 +4,7 @@ import WelcomeScreen from './components/WelcomeScreen';
 import PrefaceScreen from './components/PrefaceScreen';
 import DocumentEditor from './components/DocumentEditor';
 import DocumentLibrary from './components/DocumentLibrary';
-import SettingsModal from './components/SettingsModal';
+import SettingsModal, { applyEditorPrefs } from './components/SettingsModal';
 import LoginScreen from './components/LoginScreen';
 import { useAuth } from './hooks/useAuth';
 import { useCoaching } from './hooks/useCoaching';
@@ -90,6 +90,7 @@ export default function App() {
   // ---------------------------------------------------------------------------
   useEffect(() => {
     migrateIfNeeded();
+    applyEditorPrefs(); // Load saved font/size/spacing preferences
     const index = loadIndex();
     setDocsIndex(index);
 

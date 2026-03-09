@@ -1,19 +1,42 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package } from 'lucide-react';
+import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Github, Type, ALargeSmall } from 'lucide-react';
 import { getProvider, setProvider, getApiKey, setApiKey, hasApiKey, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady } from '../lib/ai-provider';
 
+// ── Persisted editor preferences ──────────────────────────────────
+const PREFS_KEY = 'clarity-editor-prefs';
+
+function loadPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(PREFS_KEY)) || {};
+  } catch { return {}; }
+}
+
+function savePrefs(prefs) {
+  localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+}
+
+export function getEditorPrefs() {
+  const defaults = { fontFamily: 'serif', fontSize: 'base', lineHeight: 'relaxed' };
+  return { ...defaults, ...loadPrefs() };
+}
+
 export default function SettingsModal({ onClose }) {
+  const [tab, setTab] = useState('ai'); // 'ai' | 'editor' | 'about'
   const [provider, setLocalProvider] = useState(getProvider());
   const [apiKeyInput, setApiKeyInput] = useState(getApiKey());
   const [showKey, setShowKey] = useState(false);
-  const [ollamaStatus, setOllamaStatus] = useState(null); // null | 'checking' | 'connected' | 'disconnected'
+  const [ollamaStatus, setOllamaStatus] = useState(null);
   const [ollamaModels, setOllamaModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState(getOllamaModel());
+  const [keyDeleted, setKeyDeleted] = useState(false);
   const apiKeyRef = useRef(null);
+
+  // Editor preferences
+  const [prefs, setPrefs] = useState(getEditorPrefs);
 
   // ── Electron auto-setup state ──
   const isElectron = isElectronApp();
-  const [setupPhase, setSetupPhase] = useState(null); // null | 'downloading' | 'starting' | 'pulling' | 'ready' | 'error'
+  const [setupPhase, setSetupPhase] = useState(null);
   const [downloadPercent, setDownloadPercent] = useState(0);
   const [pullPercent, setPullPercent] = useState(0);
   const [pullStatus, setPullStatus] = useState('');
@@ -21,32 +44,18 @@ export default function SettingsModal({ onClose }) {
   const [setupRunning, setSetupRunning] = useState(false);
   const cleanupRefs = useRef([]);
 
-  // Check Ollama on mount
-  useEffect(() => {
-    checkOllamaStatus();
-  }, []);
+  useEffect(() => { checkOllamaStatus(); }, []);
 
-  // Listen for IPC progress events in Electron
   useEffect(() => {
     if (!isElectron || !window.electronOllama) return;
-
-    const unsubDownload = window.electronOllama.onDownloadProgress((data) => {
-      setDownloadPercent(data.percent || 0);
-    });
+    const unsubDownload = window.electronOllama.onDownloadProgress((data) => setDownloadPercent(data.percent || 0));
     const unsubPull = window.electronOllama.onPullProgress((data) => {
       if (data.percent >= 0) setPullPercent(data.percent);
       if (data.status) setPullStatus(data.status);
     });
-    const unsubStatus = window.electronOllama.onStatusChange((data) => {
-      setSetupPhase(data.phase);
-    });
-
+    const unsubStatus = window.electronOllama.onStatusChange((data) => setSetupPhase(data.phase));
     cleanupRefs.current = [unsubDownload, unsubPull, unsubStatus];
-
-    return () => {
-      cleanupRefs.current.forEach((fn) => fn && fn());
-      cleanupRefs.current = [];
-    };
+    return () => { cleanupRefs.current.forEach((fn) => fn && fn()); cleanupRefs.current = []; };
   }, [isElectron]);
 
   const checkOllamaStatus = async () => {
@@ -56,33 +65,39 @@ export default function SettingsModal({ onClose }) {
       setOllamaStatus('connected');
       const models = await listModels();
       setOllamaModels(models);
-      // Auto-select first model if the stored model isn't in the list
       if (models.length > 0) {
-        const currentModel = selectedModel;
-        const modelExists = models.some((m) => m.name === currentModel);
-        if (!modelExists) {
-          setSelectedModel(models[0].name);
-        }
+        const modelExists = models.some((m) => m.name === selectedModel);
+        if (!modelExists) setSelectedModel(models[0].name);
       }
     } else {
       setOllamaStatus('disconnected');
     }
   };
 
-  const handleSave = useCallback(async () => {
-    setProvider(provider);
+  const handleDeleteKey = () => {
+    setApiKey('');
+    setApiKeyInput('');
+    setLocalProvider('none');
+    setProvider('none');
+    setKeyDeleted(true);
+    setTimeout(() => setKeyDeleted(false), 2000);
+  };
 
+  const handleSave = useCallback(async () => {
+    // Save editor prefs
+    savePrefs(prefs);
+    applyEditorPrefs(prefs);
+
+    // Save AI provider
+    setProvider(provider);
     if (provider === 'ollama') {
       setOllamaModel(selectedModel);
-
-      // In Electron mode, trigger auto-setup
       if (isElectron) {
         setSetupRunning(true);
         setSetupPhase('downloading');
         setSetupError(null);
         setDownloadPercent(0);
         setPullPercent(0);
-
         try {
           const result = await ensureOllamaReady(selectedModel);
           if (result && result.success === false) {
@@ -92,25 +107,21 @@ export default function SettingsModal({ onClose }) {
           } else {
             setSetupPhase('ready');
             setSetupRunning(false);
-            // Auto-close after a short delay
-            setTimeout(() => {
-              onClose();
-            }, 1500);
+            setTimeout(() => onClose(), 1500);
           }
         } catch (err) {
           setSetupPhase('error');
           setSetupError(err.message || 'Setup failed');
           setSetupRunning(false);
         }
-        return; // Don't close immediately — wait for setup
+        return;
       }
     }
-
     if (provider === 'claude' && apiKeyInput.trim() && apiKeyInput.trim() !== 'your_key_here') {
       setApiKey(apiKeyInput.trim());
     }
     onClose();
-  }, [provider, selectedModel, apiKeyInput, isElectron, onClose]);
+  }, [provider, selectedModel, apiKeyInput, isElectron, onClose, prefs]);
 
   const handleRetrySetup = useCallback(async () => {
     setSetupRunning(true);
@@ -118,7 +129,6 @@ export default function SettingsModal({ onClose }) {
     setSetupError(null);
     setDownloadPercent(0);
     setPullPercent(0);
-
     try {
       const result = await ensureOllamaReady(selectedModel);
       if (result && result.success === false) {
@@ -135,36 +145,29 @@ export default function SettingsModal({ onClose }) {
     setSetupRunning(false);
   }, [selectedModel, onClose]);
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget && !setupRunning) onClose();
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape' && !setupRunning) onClose();
-  };
-
+  const handleOverlayClick = (e) => { if (e.target === e.currentTarget && !setupRunning) onClose(); };
+  const handleKeyDown = (e) => { if (e.key === 'Escape' && !setupRunning) onClose(); };
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setupRunning]);
 
-  // ── Phase label and icon for progress display ──
   const getPhaseInfo = () => {
     switch (setupPhase) {
-      case 'downloading':
-        return { label: 'Downloading Ollama...', icon: Download, percent: downloadPercent };
-      case 'starting':
-        return { label: 'Starting server...', icon: Server, percent: -1 };
-      case 'pulling':
-        return { label: `Pulling model...`, icon: Package, percent: pullPercent };
-      case 'ready':
-        return { label: 'All set — AI features are active', icon: Check, percent: 100 };
-      case 'error':
-        return { label: setupError || 'Setup failed', icon: RefreshCw, percent: 0 };
-      default:
-        return null;
+      case 'downloading': return { label: 'Downloading Ollama...', icon: Download, percent: downloadPercent };
+      case 'starting': return { label: 'Starting server...', icon: Server, percent: -1 };
+      case 'pulling': return { label: 'Pulling model...', icon: Package, percent: pullPercent };
+      case 'ready': return { label: 'All set — AI features are active', icon: Check, percent: 100 };
+      case 'error': return { label: setupError || 'Setup failed', icon: RefreshCw, percent: 0 };
+      default: return null;
     }
   };
+
+  const tabs = [
+    { id: 'ai', label: 'AI Provider' },
+    { id: 'editor', label: 'Editor' },
+    { id: 'about', label: 'About' },
+  ];
 
   return (
     <div
@@ -183,176 +186,248 @@ export default function SettingsModal({ onClose }) {
           </button>
         </div>
 
+        {/* Tabs */}
+        <div className="flex border-b border-border px-6">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-4 py-2.5 text-xs font-semibold font-[var(--font-ui)] transition-colors cursor-pointer border-b-2 -mb-px ${
+                tab === t.id ? 'text-amber border-amber' : 'text-ghost border-transparent hover:text-text'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         {/* Body */}
-        <div className="px-6 py-5 space-y-4">
-          <div className="text-xs font-semibold font-[var(--font-ui)] text-ghost uppercase tracking-wider mb-3">
-            AI Provider
-          </div>
+        <div className="px-6 py-5 min-h-[280px]">
 
-          {/* ── Ollama Option (Electron/desktop only) ── */}
-          {isElectron && <label
-            className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-              provider === 'ollama' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
-            }`}
-          >
-            <input
-              type="radio"
-              name="provider"
-              checked={provider === 'ollama'}
-              onChange={() => setLocalProvider('ollama')}
-              disabled={setupRunning}
-              className="mt-0.5 accent-amber cursor-pointer"
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <Cpu size={14} className="text-amber" />
-                <span className="text-sm font-medium font-[var(--font-ui)] text-text">Local Model (Ollama)</span>
-                {!setupPhase && ollamaStatus === 'checking' && <Loader2 size={12} className="animate-spin text-ghost" />}
-                {!setupPhase && ollamaStatus === 'connected' && <span className="w-2 h-2 rounded-full bg-green-500" />}
-                {!setupPhase && ollamaStatus === 'disconnected' && !isElectron && <span className="w-2 h-2 rounded-full bg-red-500" />}
-              </div>
+          {/* ═══════ AI Provider Tab ═══════ */}
+          {tab === 'ai' && (
+            <div className="space-y-4">
+              {/* Ollama — Electron only */}
+              {isElectron && (
+                <label className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                  provider === 'ollama' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+                }`}>
+                  <input type="radio" name="provider" checked={provider === 'ollama'} onChange={() => setLocalProvider('ollama')} disabled={setupRunning} className="mt-0.5 accent-amber cursor-pointer" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Cpu size={14} className="text-amber" />
+                      <span className="text-sm font-medium font-[var(--font-ui)] text-text">Local Model (Ollama)</span>
+                      {!setupPhase && ollamaStatus === 'checking' && <Loader2 size={12} className="animate-spin text-ghost" />}
+                      {!setupPhase && ollamaStatus === 'connected' && <span className="w-2 h-2 rounded-full bg-green-500" />}
+                    </div>
+                    {provider === 'ollama' && (
+                      <div className="mt-3 space-y-2">
+                        {setupPhase && isElectron ? (
+                          <SetupProgress phaseInfo={getPhaseInfo()} setupPhase={setupPhase} pullStatus={pullStatus} onRetry={handleRetrySetup} />
+                        ) : (
+                          <>
+                            {ollamaStatus === 'connected' && ollamaModels.length > 0 ? (
+                              <ModelSelector models={ollamaModels} selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+                            ) : (
+                              <p className="text-xs text-ghost font-[var(--font-ui)]">Local AI will be set up automatically when you save.</p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </label>
+              )}
 
-              {provider === 'ollama' && (
-                <div className="mt-3 space-y-2">
-                  {/* ── Setup progress (Electron only) ── */}
-                  {setupPhase && isElectron ? (
-                    <SetupProgress
-                      phaseInfo={getPhaseInfo()}
-                      setupPhase={setupPhase}
-                      pullStatus={pullStatus}
-                      onRetry={handleRetrySetup}
-                    />
-                  ) : isElectron ? (
-                    <>
-                      {/* Electron: no manual install needed — show model selector if connected, or friendly message */}
-                      {ollamaStatus === 'connected' && ollamaModels.length > 0 ? (
-                        <ModelSelector
-                          models={ollamaModels}
-                          selectedModel={selectedModel}
-                          onSelectModel={setSelectedModel}
-                        />
-                      ) : (
-                        <p className="text-xs text-ghost font-[var(--font-ui)]">
-                          Local AI will be set up automatically when you save.
-                        </p>
+              {/* Claude API */}
+              <label className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                provider === 'claude' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+              }`}>
+                <input type="radio" name="provider" checked={provider === 'claude'} onChange={() => { setLocalProvider('claude'); setTimeout(() => apiKeyRef.current?.focus(), 100); }} disabled={setupRunning} className="mt-0.5 accent-amber cursor-pointer" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-amber" />
+                    <span className="text-sm font-medium font-[var(--font-ui)] text-text">Claude API</span>
+                    {hasApiKey() && <Check size={12} className="text-green-600" />}
+                  </div>
+                  {provider === 'claude' && (
+                    <div className="mt-3">
+                      <div className="relative">
+                        <input ref={apiKeyRef} type={showKey ? 'text' : 'password'} value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)} placeholder="sk-ant-api03-..." className="w-full text-xs font-[var(--font-ui)] text-text bg-white border border-border rounded-md px-3 py-1.5 pr-8 outline-none focus:border-amber transition-colors" />
+                        <button onClick={() => setShowKey(!showKey)} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ghost hover:text-text transition-colors cursor-pointer">
+                          {showKey ? <EyeOff size={12} /> : <Eye size={12} />}
+                        </button>
+                      </div>
+
+                      {/* Trust messaging */}
+                      <div className="mt-2 p-2 bg-sidebar-bg rounded-md space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <Shield size={10} className="text-green-600 shrink-0" />
+                          <span className="text-[10px] font-[var(--font-ui)] text-text/70">Your key stays in your browser&apos;s local storage</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Shield size={10} className="text-green-600 shrink-0" />
+                          <span className="text-[10px] font-[var(--font-ui)] text-text/70">Sent directly to Anthropic&apos;s API — no middleman server</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Github size={10} className="text-ghost shrink-0" />
+                          <span className="text-[10px] font-[var(--font-ui)] text-text/70">
+                            Open source — <a href="https://github.com/udhay-ravi/clarity" target="_blank" rel="noopener noreferrer" className="text-amber underline">verify the code</a>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Delete key */}
+                      {hasApiKey() && (
+                        <button
+                          onClick={handleDeleteKey}
+                          className="flex items-center gap-1.5 mt-2 text-[11px] font-[var(--font-ui)] text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+                        >
+                          {keyDeleted ? <><Check size={10} /> Key deleted</> : <><Trash2 size={10} /> Delete my API key</>}
+                        </button>
                       )}
-                    </>
-                  ) : (
-                    <>
-                      {/* Web mode: existing manual flow */}
-                      {ollamaStatus === 'connected' && ollamaModels.length > 0 ? (
-                        <ModelSelector
-                          models={ollamaModels}
-                          selectedModel={selectedModel}
-                          onSelectModel={setSelectedModel}
-                        />
-                      ) : ollamaStatus === 'connected' ? (
-                        <p className="text-xs text-ghost font-[var(--font-ui)]">
-                          No models found. Run: <code className="bg-sidebar-bg px-1 rounded text-text">ollama pull llama3.2:3b</code>
-                        </p>
-                      ) : ollamaStatus === 'disconnected' ? (
-                        <p className="text-xs text-ghost font-[var(--font-ui)]">
-                          Ollama is not running.{' '}
-                          <a href="https://ollama.com" target="_blank" rel="noopener noreferrer" className="text-amber underline">
-                            Install Ollama
-                          </a>
-                        </p>
-                      ) : null}
-                      <button
-                        onClick={checkOllamaStatus}
-                        className="flex items-center gap-1 text-[11px] font-[var(--font-ui)] text-amber hover:text-amber/80 transition-colors cursor-pointer"
-                      >
-                        <RefreshCw size={10} /> Refresh
-                      </button>
-                    </>
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-          </label>}
+              </label>
 
-          {/* ── Claude Option ── */}
-          <label
-            className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-              provider === 'claude' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
-            }`}
-          >
-            <input
-              type="radio"
-              name="provider"
-              checked={provider === 'claude'}
-              onChange={() => {
-                setLocalProvider('claude');
-                setTimeout(() => apiKeyRef.current?.focus(), 100);
-              }}
-              disabled={setupRunning}
-              className="mt-0.5 accent-amber cursor-pointer"
-            />
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <Sparkles size={14} className="text-amber" />
-                <span className="text-sm font-medium font-[var(--font-ui)] text-text">Claude API</span>
-                {hasApiKey() && <Check size={12} className="text-green-600" />}
-              </div>
-
-              {provider === 'claude' && (
-                <div className="mt-3">
-                  <div className="relative">
-                    <input
-                      ref={apiKeyRef}
-                      type={showKey ? 'text' : 'password'}
-                      value={apiKeyInput}
-                      onChange={(e) => setApiKeyInput(e.target.value)}
-                      placeholder="sk-ant-api03-..."
-                      className="w-full text-xs font-[var(--font-ui)] text-text bg-white border border-border rounded-md px-3 py-1.5 pr-8 outline-none focus:border-amber transition-colors"
-                    />
-                    <button
-                      onClick={() => setShowKey(!showKey)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ghost hover:text-text transition-colors cursor-pointer"
-                    >
-                      {showKey ? <EyeOff size={12} /> : <Eye size={12} />}
-                    </button>
+              {/* No AI */}
+              <label className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                provider === 'none' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+              }`}>
+                <input type="radio" name="provider" checked={provider === 'none'} onChange={() => setLocalProvider('none')} disabled={setupRunning} className="mt-0.5 accent-amber cursor-pointer" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Ban size={14} className="text-ghost" />
+                    <span className="text-sm font-medium font-[var(--font-ui)] text-text">No AI</span>
                   </div>
-                  <p className="text-[10px] font-[var(--font-ui)] text-ghost mt-1.5">
-                    Stored locally. Never sent anywhere except Anthropic.
-                  </p>
+                  <p className="text-xs font-[var(--font-ui)] text-ghost mt-1">Templates and coaching still work. Ghost text will be disabled.</p>
                 </div>
-              )}
+              </label>
             </div>
-          </label>
+          )}
 
-          {/* ── No AI Option ── */}
-          <label
-            className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-              provider === 'none' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
-            }`}
-          >
-            <input
-              type="radio"
-              name="provider"
-              checked={provider === 'none'}
-              onChange={() => setLocalProvider('none')}
-              disabled={setupRunning}
-              className="mt-0.5 accent-amber cursor-pointer"
-            />
-            <div>
-              <div className="flex items-center gap-2">
-                <Ban size={14} className="text-ghost" />
-                <span className="text-sm font-medium font-[var(--font-ui)] text-text">No AI</span>
+          {/* ═══════ Editor Tab ═══════ */}
+          {tab === 'editor' && (
+            <div className="space-y-5">
+              {/* Font Family */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Type size={14} className="text-amber" />
+                  <span className="text-xs font-semibold font-[var(--font-ui)] text-text uppercase tracking-wider">Font Style</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'serif', label: 'Serif', sample: 'Lora', style: "'Lora', serif" },
+                    { id: 'sans', label: 'Sans-serif', sample: 'DM Sans', style: "'DM Sans', sans-serif" },
+                    { id: 'mono', label: 'Monospace', sample: 'Mono', style: "'SF Mono', 'Fira Code', monospace" },
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setPrefs({ ...prefs, fontFamily: f.id })}
+                      className={`p-3 rounded-lg border-2 text-center transition-all cursor-pointer ${
+                        prefs.fontFamily === f.id ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+                      }`}
+                    >
+                      <span className="block text-base mb-0.5" style={{ fontFamily: f.style }}>Aa</span>
+                      <span className="text-[10px] font-[var(--font-ui)] text-ghost">{f.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <p className="text-xs font-[var(--font-ui)] text-ghost mt-1">
-                Ghost text and Clarity Check will be disabled.
+
+              {/* Font Size */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ALargeSmall size={14} className="text-amber" />
+                  <span className="text-xs font-semibold font-[var(--font-ui)] text-text uppercase tracking-wider">Font Size</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'sm', label: 'Small', px: '14px' },
+                    { id: 'base', label: 'Default', px: '16px' },
+                    { id: 'lg', label: 'Large', px: '18px' },
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setPrefs({ ...prefs, fontSize: s.id })}
+                      className={`p-3 rounded-lg border-2 text-center transition-all cursor-pointer ${
+                        prefs.fontSize === s.id ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+                      }`}
+                    >
+                      <span className="block font-[var(--font-body)]" style={{ fontSize: s.px }}>{s.px.replace('px', '')}</span>
+                      <span className="text-[10px] font-[var(--font-ui)] text-ghost">{s.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Line Height */}
+              <div>
+                <span className="text-xs font-semibold font-[var(--font-ui)] text-text uppercase tracking-wider">Line Spacing</span>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {[
+                    { id: 'snug', label: 'Compact', val: '1.5' },
+                    { id: 'relaxed', label: 'Default', val: '1.75' },
+                    { id: 'loose', label: 'Spacious', val: '2' },
+                  ].map((l) => (
+                    <button
+                      key={l.id}
+                      onClick={() => setPrefs({ ...prefs, lineHeight: l.id })}
+                      className={`p-2.5 rounded-lg border-2 text-center transition-all cursor-pointer ${
+                        prefs.lineHeight === l.id ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+                      }`}
+                    >
+                      <span className="text-[10px] font-[var(--font-ui)] text-ghost">{l.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ═══════ About Tab ═══════ */}
+          {tab === 'about' && (
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                <span className="text-3xl">&#9998;</span>
+                <h3 className="text-lg font-bold font-[var(--font-ui)] text-text mt-2">Clarity</h3>
+                <p className="text-xs font-[var(--font-ui)] text-ghost mt-1">AI-powered writing assistant for PMs</p>
+              </div>
+
+              <div className="space-y-2">
+                <a
+                  href="https://github.com/udhay-ravi/clarity"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-amber/40 transition-all"
+                >
+                  <Github size={16} className="text-text" />
+                  <div>
+                    <span className="text-sm font-medium font-[var(--font-ui)] text-text">Source Code</span>
+                    <p className="text-[10px] font-[var(--font-ui)] text-ghost">Open source on GitHub</p>
+                  </div>
+                </a>
+
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
+                  <Shield size={16} className="text-green-600" />
+                  <div>
+                    <span className="text-sm font-medium font-[var(--font-ui)] text-text">Privacy First</span>
+                    <p className="text-[10px] font-[var(--font-ui)] text-ghost">All data stays in your browser. No tracking. No analytics.</p>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-center text-[10px] font-[var(--font-ui)] text-ghost/50 pt-2">
+                Built with React + Vite + Tailwind
               </p>
             </div>
-          </label>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex justify-end gap-2 px-6 py-4 border-t border-border">
-          <button
-            onClick={() => { if (!setupRunning) onClose(); }}
-            className="px-4 py-2 text-sm font-[var(--font-ui)] font-medium text-ghost hover:text-text transition-colors cursor-pointer rounded-lg"
-          >
+          <button onClick={() => { if (!setupRunning) onClose(); }} className="px-4 py-2 text-sm font-[var(--font-ui)] font-medium text-ghost hover:text-text transition-colors cursor-pointer rounded-lg">
             Cancel
           </button>
           <button
@@ -368,23 +443,31 @@ export default function SettingsModal({ onClose }) {
       </div>
 
       <style>{`
-        @keyframes settingsOverlay {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes settingsModal {
-          from { opacity: 0; transform: scale(0.95) translateY(8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .animate-settings-overlay {
-          animation: settingsOverlay 0.15s ease-out;
-        }
-        .animate-settings-modal {
-          animation: settingsModal 0.2s ease-out;
-        }
+        @keyframes settingsOverlay { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes settingsModal { from { opacity: 0; transform: scale(0.95) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .animate-settings-overlay { animation: settingsOverlay 0.15s ease-out; }
+        .animate-settings-modal { animation: settingsModal 0.2s ease-out; }
       `}</style>
     </div>
   );
+}
+
+// ── Apply editor prefs to CSS variables ──────────────────────────
+export function applyEditorPrefs(prefs) {
+  if (!prefs) prefs = getEditorPrefs();
+  const root = window.document.documentElement;
+
+  const fontMap = {
+    serif: "'Lora', serif",
+    sans: "'DM Sans', sans-serif",
+    mono: "'SF Mono', 'Fira Code', 'Consolas', monospace",
+  };
+  const sizeMap = { sm: '14px', base: '16px', lg: '18px' };
+  const lineMap = { snug: '1.5', relaxed: '1.75', loose: '2' };
+
+  root.style.setProperty('--editor-font', fontMap[prefs.fontFamily] || fontMap.serif);
+  root.style.setProperty('--editor-size', sizeMap[prefs.fontSize] || sizeMap.base);
+  root.style.setProperty('--editor-line-height', lineMap[prefs.lineHeight] || lineMap.relaxed);
 }
 
 // ── Sub-components ────────────────────────────────────────────────
@@ -392,15 +475,9 @@ export default function SettingsModal({ onClose }) {
 function ModelSelector({ models, selectedModel, onSelectModel }) {
   return (
     <div className="relative">
-      <select
-        value={selectedModel}
-        onChange={(e) => onSelectModel(e.target.value)}
-        className="w-full text-xs font-[var(--font-ui)] text-text bg-white border border-border rounded-md px-3 py-1.5 pr-7 outline-none focus:border-amber transition-colors appearance-none cursor-pointer"
-      >
+      <select value={selectedModel} onChange={(e) => onSelectModel(e.target.value)} className="w-full text-xs font-[var(--font-ui)] text-text bg-white border border-border rounded-md px-3 py-1.5 pr-7 outline-none focus:border-amber transition-colors appearance-none cursor-pointer">
         {models.map((m) => (
-          <option key={m.name} value={m.name}>
-            {m.name} {m.size ? `(${m.size})` : ''}
-          </option>
+          <option key={m.name} value={m.name}>{m.name} {m.size ? `(${m.size})` : ''}</option>
         ))}
       </select>
       <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-ghost pointer-events-none" />
@@ -410,7 +487,6 @@ function ModelSelector({ models, selectedModel, onSelectModel }) {
 
 function SetupProgress({ phaseInfo, setupPhase, pullStatus, onRetry }) {
   if (!phaseInfo) return null;
-
   const { label, icon: Icon, percent } = phaseInfo;
   const isError = setupPhase === 'error';
   const isReady = setupPhase === 'ready';
@@ -418,52 +494,25 @@ function SetupProgress({ phaseInfo, setupPhase, pullStatus, onRetry }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        {isReady ? (
-          <Check size={14} className="text-green-600" />
-        ) : isError ? (
-          <RefreshCw size={14} className="text-red-500" />
-        ) : (
-          <Icon size={14} className="text-amber animate-pulse" />
-        )}
-        <span className={`text-xs font-[var(--font-ui)] ${isReady ? 'text-green-700' : isError ? 'text-red-600' : 'text-text'}`}>
-          {label}
-        </span>
+        {isReady ? <Check size={14} className="text-green-600" /> : isError ? <RefreshCw size={14} className="text-red-500" /> : <Icon size={14} className="text-amber animate-pulse" />}
+        <span className={`text-xs font-[var(--font-ui)] ${isReady ? 'text-green-700' : isError ? 'text-red-600' : 'text-text'}`}>{label}</span>
       </div>
-
-      {/* Progress bar — show for download and pull phases */}
       {(setupPhase === 'downloading' || setupPhase === 'pulling') && percent >= 0 && (
         <div className="w-full bg-border rounded-full h-1.5 overflow-hidden">
-          <div
-            className="bg-amber h-full rounded-full transition-all duration-300 ease-out"
-            style={{ width: `${Math.min(percent, 100)}%` }}
-          />
+          <div className="bg-amber h-full rounded-full transition-all duration-300 ease-out" style={{ width: `${Math.min(percent, 100)}%` }} />
         </div>
       )}
-
-      {/* Percentage + status text */}
-      {setupPhase === 'downloading' && percent > 0 && (
-        <p className="text-[10px] font-[var(--font-ui)] text-ghost">{percent}% downloaded</p>
-      )}
-      {setupPhase === 'pulling' && (
-        <p className="text-[10px] font-[var(--font-ui)] text-ghost">
-          {pullStatus}{percent > 0 ? ` — ${percent}%` : ''}
-        </p>
-      )}
+      {setupPhase === 'downloading' && percent > 0 && <p className="text-[10px] font-[var(--font-ui)] text-ghost">{percent}% downloaded</p>}
+      {setupPhase === 'pulling' && <p className="text-[10px] font-[var(--font-ui)] text-ghost">{pullStatus}{percent > 0 ? ` — ${percent}%` : ''}</p>}
       {setupPhase === 'starting' && (
         <div className="flex items-center gap-1.5">
           <Loader2 size={10} className="animate-spin text-ghost" />
           <p className="text-[10px] font-[var(--font-ui)] text-ghost">Waiting for server...</p>
         </div>
       )}
-
-      {/* Error retry button */}
       {isError && (
-        <button
-          onClick={onRetry}
-          className="flex items-center gap-1.5 text-[11px] font-[var(--font-ui)] text-amber hover:text-amber/80 transition-colors cursor-pointer"
-        >
-          <RefreshCw size={10} />
-          Try again
+        <button onClick={onRetry} className="flex items-center gap-1.5 text-[11px] font-[var(--font-ui)] text-amber hover:text-amber/80 transition-colors cursor-pointer">
+          <RefreshCw size={10} /> Try again
         </button>
       )}
     </div>
