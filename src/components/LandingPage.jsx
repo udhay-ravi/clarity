@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
-export default function LandingPage({ onGetStarted }) {
+export default function LandingPage({ onGetStarted, authEnabled }) {
   return (
     <div className="min-h-screen bg-bg">
       {/* ── Nav ── */}
@@ -42,7 +42,7 @@ export default function LandingPage({ onGetStarted }) {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-light/60 border border-amber/20 mb-8">
           <Zap size={13} className="text-amber" />
           <span className="text-xs font-[var(--font-ui)] font-medium text-amber">
-            AI-powered writing assistant for PMs
+            AI-powered thinking assistant for PMs
           </span>
         </div>
 
@@ -68,7 +68,7 @@ export default function LandingPage({ onGetStarted }) {
             <ArrowRight size={16} />
           </button>
           <span className="text-xs font-[var(--font-ui)] text-ghost">
-            Free &middot; No account needed
+            {authEnabled ? 'Free \u00b7 Sign up to get started' : 'Free \u00b7 No account needed'}
           </span>
         </div>
       </section>
@@ -205,7 +205,7 @@ export default function LandingPage({ onGetStarted }) {
             </span>
           </div>
           <p className="text-xs font-[var(--font-ui)] text-ghost/60">
-            Open source PM writing assistant &middot; Built with React &amp; Vite
+            Open source PM thinking assistant &middot; Built with React &amp; Vite
           </p>
         </div>
       </footer>
