@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
-export default function LandingPage({ onGetStarted }) {
+export default function LandingPage({ onGetStarted, authEnabled }) {
   return (
     <div className="min-h-screen bg-bg">
       {/* ── Nav ── */}
@@ -68,7 +68,7 @@ export default function LandingPage({ onGetStarted }) {
             <ArrowRight size={16} />
           </button>
           <span className="text-xs font-[var(--font-ui)] text-ghost">
-            Free &middot; No account needed
+            {authEnabled ? 'Free \u00b7 Sign up to get started' : 'Free \u00b7 No account needed'}
           </span>
         </div>
       </section>

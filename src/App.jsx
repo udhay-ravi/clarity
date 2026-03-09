@@ -1,11 +1,13 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import LandingPage from './components/LandingPage';
 import WelcomeScreen from './components/WelcomeScreen';
+import AuthScreen from './components/AuthScreen';
 import DocumentEditor from './components/DocumentEditor';
 import DocumentLibrary from './components/DocumentLibrary';
 import SettingsModal, { applyEditorPrefs, getEditorPrefs } from './components/SettingsModal';
 import { useCoaching } from './hooks/useCoaching';
 import { useReadability } from './hooks/useReadability';
+import { useAuth } from './hooks/useAuth';
 import { createDocumentFromTemplate, createBlankDocument } from './lib/templates';
 import {
   migrateIfNeeded,
@@ -110,39 +112,57 @@ export default function App() {
 
   const { nudges, evaluate, dismissNudge, trackSectionVisit, clearSectionTimer } = useCoaching();
   const { grade: readabilityGrade, feedback: readabilityFeedback, compute: computeReadability } = useReadability();
+  const { user: authUser, loading: authLoading, authEnabled, signInWithEmail, signUpWithEmail, signOut } = useAuth();
   const autoSaveTimer = useRef(null);
   const saveStatusTimer = useRef(null);
+  const initRef = useRef(false);
+
+  const normalizedUser = useMemo(() => {
+    if (!authUser) return null;
+    return {
+      email: authUser.email,
+      displayName: authUser.user_metadata?.full_name || authUser.email?.split('@')[0],
+      photoURL: authUser.user_metadata?.avatar_url || null,
+    };
+  }, [authUser]);
 
   // ---------------------------------------------------------------------------
   // Init: migrate legacy draft, load index, decide first screen
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    migrateIfNeeded();
-    applyEditorPrefs(); // Load saved font/size/spacing preferences
+    if (authLoading) return;
+
+    // One-time init (migration, prefs, Ollama, theme listener)
+    if (!initRef.current) {
+      initRef.current = true;
+      migrateIfNeeded();
+      applyEditorPrefs();
+
+      if (getProvider() === 'ollama' && typeof window !== 'undefined' && window.isElectron) {
+        autoStartOllama().catch((err) => console.warn('Ollama auto-start failed:', err.message));
+      }
+
+      const mql = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleThemeChange = () => {
+        const p = getEditorPrefs();
+        if (p.theme === 'system') applyEditorPrefs(p);
+      };
+      mql.addEventListener('change', handleThemeChange);
+    }
+
     const index = loadIndex();
     setDocsIndex(index);
     setProjects(loadProjects());
 
-    if (index.docs.length > 0) {
-      setScreen('library');
-    } else {
+    // Decide first screen based on auth state
+    if (authEnabled && authUser) {
+      setScreen(index.docs.length > 0 ? 'library' : 'welcome');
+    } else if (authEnabled && !authUser) {
       setScreen('landing');
+    } else {
+      setScreen(index.docs.length > 0 ? 'library' : 'landing');
     }
-
-    // Auto-start Ollama server in Electron if provider is 'ollama'
-    if (getProvider() === 'ollama' && typeof window !== 'undefined' && window.isElectron) {
-      autoStartOllama().catch((err) => console.warn('Ollama auto-start failed:', err.message));
-    }
-
-    // Listen for system theme changes when in 'system' mode
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleThemeChange = () => {
-      const p = getEditorPrefs();
-      if (p.theme === 'system') applyEditorPrefs(p);
-    };
-    mql.addEventListener('change', handleThemeChange);
-    return () => mql.removeEventListener('change', handleThemeChange);
-  }, []);
+  }, [authLoading, authUser, authEnabled]);
 
   // ---------------------------------------------------------------------------
   // Manual save helper (reused by auto-save + Cmd+S)
@@ -296,6 +316,15 @@ export default function App() {
     setScreen('landing');
   }, [document]);
 
+  const handleSignOut = useCallback(async () => {
+    if (document) {
+      saveDocument(document);
+    }
+    setDocument(null);
+    await signOut();
+    setScreen('landing');
+  }, [document, signOut]);
+
   const handleGoToLibrary = useCallback(() => {
     // Save current doc before leaving
     if (document) {
@@ -399,10 +428,31 @@ export default function App() {
   if (screen === 'loading') return null;
 
   if (screen === 'landing') {
-    return <LandingPage onGetStarted={() => {
-      const index = loadIndex();
-      setScreen(index.docs.length > 0 ? 'library' : 'welcome');
-    }} />;
+    return <LandingPage
+      authEnabled={authEnabled}
+      onGetStarted={() => {
+        if (authEnabled && !authUser) {
+          setScreen('auth');
+        } else {
+          const index = loadIndex();
+          setScreen(index.docs.length > 0 ? 'library' : 'welcome');
+        }
+      }}
+    />;
+  }
+
+  if (screen === 'auth') {
+    return (
+      <AuthScreen
+        onSuccess={() => {
+          const index = loadIndex();
+          setScreen(index.docs.length > 0 ? 'library' : 'welcome');
+        }}
+        onBack={() => setScreen('landing')}
+        signInWithEmail={signInWithEmail}
+        signUpWithEmail={signUpWithEmail}
+      />
+    );
   }
 
   const settingsOverlay = showSettings ? <SettingsModal onClose={handleCloseSettings} /> : null;
@@ -455,8 +505,8 @@ export default function App() {
           onGoToLibrary={handleGoToLibrary}
           onGoToLanding={handleGoToLanding}
           onOpenSettings={handleOpenSettings}
-          onSignOut={null}
-          user={null}
+          onSignOut={authEnabled ? handleSignOut : null}
+          user={normalizedUser}
           saveStatus={saveStatus}
           readabilityGrade={readabilityGrade}
           readabilityFeedback={readabilityFeedback}
