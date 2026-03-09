@@ -12,6 +12,7 @@
 const INDEX_KEY = 'clarity-docs-index';
 const DOC_PREFIX = 'clarity-doc-';
 const LEGACY_KEY = 'clarity-draft';
+const PROJECTS_KEY = 'clarity-projects';
 
 // ---------------------------------------------------------------------------
 // Index helpers
@@ -132,6 +133,73 @@ export function setActiveDocId(id) {
   const index = loadIndex();
   index.activeDocId = id;
   saveIndex(index);
+}
+
+// ---------------------------------------------------------------------------
+// Project CRUD
+// ---------------------------------------------------------------------------
+
+export function loadProjects() {
+  try {
+    const raw = localStorage.getItem(PROJECTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.warn('Failed to load projects:', e);
+  }
+  return [];
+}
+
+export function saveProjects(projects) {
+  try {
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects));
+  } catch (e) {
+    console.warn('Failed to save projects:', e);
+  }
+}
+
+export function createProject(name, color) {
+  const projects = loadProjects();
+  const project = { id: crypto.randomUUID(), name, color, createdAt: Date.now() };
+  projects.push(project);
+  saveProjects(projects);
+  return project;
+}
+
+export function renameProject(id, newName) {
+  const projects = loadProjects();
+  const p = projects.find((proj) => proj.id === id);
+  if (p) {
+    p.name = newName;
+    saveProjects(projects);
+  }
+  return projects;
+}
+
+export function deleteProject(id) {
+  let projects = loadProjects();
+  projects = projects.filter((p) => p.id !== id);
+  saveProjects(projects);
+
+  // Unassign any docs that belonged to this project
+  const index = loadIndex();
+  for (const doc of index.docs) {
+    if (doc.projectId === id) {
+      doc.projectId = null;
+    }
+  }
+  saveIndex(index);
+
+  return { projects, index };
+}
+
+export function assignDocToProject(docId, projectId) {
+  const index = loadIndex();
+  const entry = index.docs.find((d) => d.id === docId);
+  if (entry) {
+    entry.projectId = projectId || null;
+    saveIndex(index);
+  }
+  return index;
 }
 
 // ---------------------------------------------------------------------------

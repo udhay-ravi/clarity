@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import LandingPage from './components/LandingPage';
 import WelcomeScreen from './components/WelcomeScreen';
-import PrefaceScreen from './components/PrefaceScreen';
 import DocumentEditor from './components/DocumentEditor';
 import DocumentLibrary from './components/DocumentLibrary';
 import SettingsModal, { applyEditorPrefs, getEditorPrefs } from './components/SettingsModal';
@@ -16,6 +15,11 @@ import {
   deleteDocument,
   createNewDocument,
   setActiveDocId,
+  loadProjects,
+  createProject,
+  renameProject as renameProjectStorage,
+  deleteProject as deleteProjectStorage,
+  assignDocToProject as assignDocToProjectStorage,
 } from './lib/storage';
 import { getProvider } from './lib/ai-provider';
 import { autoStartOllama } from './lib/ollama';
@@ -99,7 +103,7 @@ export default function App() {
   const [document, setDocument] = useState(null);
   const [saveStatus, setSaveStatus] = useState(null);
   const [docsIndex, setDocsIndex] = useState(null);
-  const [pendingTemplate, setPendingTemplate] = useState(null);
+  const [projects, setProjects] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const handleOpenSettings = useCallback(() => setShowSettings(true), []);
   const handleCloseSettings = useCallback(() => setShowSettings(false), []);
@@ -117,6 +121,7 @@ export default function App() {
     applyEditorPrefs(); // Load saved font/size/spacing preferences
     const index = loadIndex();
     setDocsIndex(index);
+    setProjects(loadProjects());
 
     if (index.docs.length > 0) {
       setScreen('library');
@@ -217,44 +222,46 @@ export default function App() {
   }, [screen, document, handleSave]);
 
   // ---------------------------------------------------------------------------
-  // Template → Editor flow
+  // Template → Editor flow (unified — no separate preface screen)
   // ---------------------------------------------------------------------------
-  const handleStart = useCallback((template, input) => {
-    if (template && template.preface && template.preface.length > 0) {
-      setPendingTemplate({ ...template, rawInput: input });
-      setScreen('preface');
+  const handleStart = useCallback((template, input, prefaceValues = {}) => {
+    let doc;
+    if (template) {
+      doc = createDocumentFromTemplate(template, prefaceValues);
     } else {
-      let doc;
-      if (template) {
-        doc = createDocumentFromTemplate(template);
-      } else {
-        doc = createBlankDocument();
-        if (input?.trim()) {
-          doc.title = input.trim();
-        }
+      doc = createBlankDocument();
+      if (input?.trim()) {
+        doc.title = input.trim();
       }
-      // Persist new doc to storage immediately
-      const saved = createNewDocument(doc);
-      setDocument(saved);
-      setDocsIndex(loadIndex());
-      setScreen('editor');
     }
-  }, []);
-
-  const handlePrefaceComplete = useCallback((prefaceValues) => {
-    const doc = createDocumentFromTemplate(pendingTemplate, prefaceValues);
     const saved = createNewDocument(doc);
     setDocument(saved);
     setDocsIndex(loadIndex());
-    setPendingTemplate(null);
     setScreen('editor');
-  }, [pendingTemplate]);
+  }, []);
 
-  const handlePrefaceBack = useCallback(() => {
-    setPendingTemplate(null);
-    // Go back to library if docs exist, else welcome
-    const index = loadIndex();
-    setScreen(index.docs.length > 0 ? 'library' : 'welcome');
+  // ---------------------------------------------------------------------------
+  // Project interactions
+  // ---------------------------------------------------------------------------
+  const handleCreateProject = useCallback((name, color) => {
+    createProject(name, color);
+    setProjects(loadProjects());
+  }, []);
+
+  const handleRenameProject = useCallback((id, newName) => {
+    renameProjectStorage(id, newName);
+    setProjects(loadProjects());
+  }, []);
+
+  const handleDeleteProject = useCallback((id) => {
+    const { projects: updated, index } = deleteProjectStorage(id);
+    setProjects(updated);
+    setDocsIndex(index);
+  }, []);
+
+  const handleAssignDocToProject = useCallback((docId, projectId) => {
+    const updatedIndex = assignDocToProjectStorage(docId, projectId);
+    setDocsIndex(updatedIndex);
   }, []);
 
   // ---------------------------------------------------------------------------
@@ -341,6 +348,39 @@ export default function App() {
     setTimeout(() => exportToDocx(document), 400);
   }, [document]);
 
+  const handleOpenInGoogleDocs = useCallback(() => {
+    if (!document) return;
+    // Build HTML content for clipboard
+    let html = `<h1>${document.title || 'Untitled'}</h1>`;
+    if (document.preface) {
+      for (const field of Object.values(document.preface)) {
+        if (field.value?.trim()) {
+          html += `<p><strong>${field.label}:</strong> ${field.value}</p>`;
+        }
+      }
+    }
+    for (const section of document.sections) {
+      if (section.title) html += `<h2>${section.title}</h2>`;
+      if (section.body) {
+        const paragraphs = section.body.split('\n').filter(Boolean);
+        for (const p of paragraphs) {
+          html += `<p>${p}</p>`;
+        }
+      }
+    }
+    // Copy as rich text to clipboard
+    const blob = new Blob([html], { type: 'text/html' });
+    const plainText = exportToMarkdown(document);
+    navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': blob,
+        'text/plain': new Blob([plainText], { type: 'text/plain' }),
+      }),
+    ]).then(() => {
+      window.open('https://docs.google.com/document/create', '_blank');
+    });
+  }, [document]);
+
   const handleSectionFocus = useCallback(
     (sectionId) => {
       trackSectionVisit(sectionId);
@@ -359,7 +399,10 @@ export default function App() {
   if (screen === 'loading') return null;
 
   if (screen === 'landing') {
-    return <LandingPage onGetStarted={() => setScreen('welcome')} />;
+    return <LandingPage onGetStarted={() => {
+      const index = loadIndex();
+      setScreen(index.docs.length > 0 ? 'library' : 'welcome');
+    }} />;
   }
 
   const settingsOverlay = showSettings ? <SettingsModal onClose={handleCloseSettings} /> : null;
@@ -369,11 +412,16 @@ export default function App() {
       <>
         <DocumentLibrary
           docs={docsIndex?.docs || []}
+          projects={projects}
           onOpenDoc={handleOpenDoc}
           onNewDoc={handleNewDocFromLibrary}
           onDeleteDoc={handleDeleteDoc}
           onOpenSettings={handleOpenSettings}
           onGoToLanding={handleGoToLanding}
+          onCreateProject={handleCreateProject}
+          onRenameProject={handleRenameProject}
+          onDeleteProject={handleDeleteProject}
+          onAssignDocToProject={handleAssignDocToProject}
         />
         {settingsOverlay}
       </>
@@ -386,16 +434,6 @@ export default function App() {
         <WelcomeScreen onStart={handleStart} onOpenSettings={handleOpenSettings} onGoToLanding={handleGoToLanding} />
         {settingsOverlay}
       </>
-    );
-  }
-
-  if (screen === 'preface' && pendingTemplate) {
-    return (
-      <PrefaceScreen
-        template={pendingTemplate}
-        onComplete={handlePrefaceComplete}
-        onBack={handlePrefaceBack}
-      />
     );
   }
 
@@ -412,6 +450,7 @@ export default function App() {
           onExportPdf={handleExportPdf}
           onExportDocx={handleExportDocx}
           onExportAll={handleExportAll}
+          onOpenInGoogleDocs={handleOpenInGoogleDocs}
           onNewDoc={handleNewDoc}
           onGoToLibrary={handleGoToLibrary}
           onGoToLanding={handleGoToLanding}

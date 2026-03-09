@@ -1,7 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { PenLine, Key, Eye, EyeOff, Cpu, Sparkles, ArrowLeft, RefreshCw, Loader2, Check, ChevronDown } from 'lucide-react';
+import { PenLine, Key, Eye, EyeOff, Cpu, Sparkles, ArrowLeft, ArrowRight, RefreshCw, Loader2, Check, ChevronDown, ChevronRight } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 import { useDocumentTemplate } from '../hooks/useDocumentTemplate';
+import { TEMPLATES } from '../lib/templates';
 import { hasApiKey, getApiKey, setApiKey, getProvider, setProvider, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp } from '../lib/ai-provider';
+
+const FEATURED_KEYS = ['prd', 'prfaq', 'onePager', 'productPitch', 'launchBrief', 'pricingProposal'];
+const SECONDARY_KEYS = Object.keys(TEMPLATES).filter((k) => !FEATURED_KEYS.includes(k));
 
 export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }) {
   const [input, setInput] = useState('');
@@ -10,13 +15,20 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
   const [exiting, setExiting] = useState(false);
   const isElectron = isElectronApp();
 
-  // Provider selection state
-  const providerConfigured = getProvider() !== 'none' || hasApiKey();
+  // Template selection + preface
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [prefaceValues, setPrefaceValues] = useState({});
+  const [showAllTemplates, setShowAllTemplates] = useState(false);
+  const prefaceRefs = useRef([]);
+  const prefaceContainerRef = useRef(null);
+
+  // Provider selection state — skip if user already made a choice (even 'none')
+  const providerConfigured = localStorage.getItem('clarity-ai-provider') !== null || hasApiKey();
   const [step, setStep] = useState(providerConfigured ? 'document' : 'provider');
 
   // Sub-steps for provider setup
-  const [providerChoice, setProviderChoice] = useState(null); // 'ollama' | 'claude'
-  const [ollamaStatus, setOllamaStatus] = useState(null); // null | 'checking' | 'connected' | 'disconnected'
+  const [providerChoice, setProviderChoice] = useState(null);
+  const [ollamaStatus, setOllamaStatus] = useState(null);
   const [ollamaModels, setOllamaModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState(getOllamaModel());
   const [apiKeyInput, setApiKeyInput] = useState(getApiKey());
@@ -28,6 +40,16 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [step]);
+
+  // Scroll preface into view when it appears
+  useEffect(() => {
+    if (selectedTemplate?.preface?.length > 0 && prefaceContainerRef.current) {
+      setTimeout(() => {
+        prefaceContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        prefaceRefs.current[0]?.focus();
+      }, 100);
+    }
+  }, [selectedTemplate?.key]);
 
   // ── Ollama flow ───────────────────────────────────────────────
   const handleChooseOllama = async () => {
@@ -94,24 +116,75 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
     setStep('document');
   };
 
-  // ── Document type (Step 2) ────────────────────────────────────
+  // ── Template selection ────────────────────────────────────────
+  const handleSelectTemplate = (key) => {
+    if (selectedTemplate?.key === key) {
+      // Deselect
+      setSelectedTemplate(null);
+      setPrefaceValues({});
+      setInput('');
+      return;
+    }
+    const template = { key, ...TEMPLATES[key] };
+    setSelectedTemplate(template);
+    setInput(template.name);
+    const init = {};
+    for (const field of template.preface) {
+      init[field.key] = '';
+    }
+    setPrefaceValues(init);
+  };
+
+  // ── Text input + detection ────────────────────────────────────
   const handleChange = (e) => {
     const value = e.target.value;
     setInput(value);
-    detect(value);
+    const result = detect(value);
+    if (result) {
+      setSelectedTemplate(result);
+      const init = {};
+      for (const field of result.preface) {
+        init[field.key] = '';
+      }
+      setPrefaceValues(init);
+    } else {
+      setSelectedTemplate(null);
+      setPrefaceValues({});
+    }
   };
 
-  const handleStart = () => {
+  // ── Submit ────────────────────────────────────────────────────
+  const handleSubmit = () => {
     setExiting(true);
     setTimeout(() => {
-      onStart(detection, input);
+      if (selectedTemplate) {
+        onStart(selectedTemplate, input, prefaceValues);
+      } else {
+        onStart(null, input, {});
+      }
     }, 400);
   };
 
-  const handleKeyDown = (e) => {
+  const handleInputKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleStart();
+      if (selectedTemplate?.preface?.length > 0) {
+        // Focus first preface field
+        prefaceRefs.current[0]?.focus();
+      } else if (input.trim().length > 0) {
+        handleSubmit();
+      }
+    }
+  };
+
+  const handlePrefaceKeyDown = (e, index) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (index < selectedTemplate.preface.length - 1) {
+        prefaceRefs.current[index + 1]?.focus();
+      } else {
+        handleSubmit();
+      }
     }
   };
 
@@ -122,15 +195,22 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
     return 'No AI';
   };
 
+  const hasPreface = selectedTemplate?.preface?.length > 0;
+
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-center px-6 transition-opacity duration-400 ${
+      className={`min-h-screen flex flex-col items-center ${
+        hasPreface ? 'justify-start pt-16 pb-16' : 'justify-center'
+      } px-6 transition-opacity duration-400 relative ${
         exiting ? 'opacity-0' : 'opacity-100'
       }`}
     >
+      <div className="absolute top-5 right-6">
+        <ThemeToggle />
+      </div>
       <button
         onClick={onGoToLanding}
-        className="flex items-center gap-3 mb-12 hover:opacity-70 transition-opacity cursor-pointer"
+        className="flex items-center gap-3 mb-10 hover:opacity-70 transition-opacity cursor-pointer"
         title="Back to Home"
       >
         <PenLine className="w-8 h-8 text-amber" />
@@ -149,7 +229,6 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
             </p>
 
             <div className={`grid ${isElectron ? 'grid-cols-2' : 'grid-cols-1 max-w-xs mx-auto'} gap-4 mb-6`}>
-              {/* Ollama card — only in Electron (desktop) */}
               {isElectron && (
                 <button
                   onClick={handleChooseOllama}
@@ -165,7 +244,6 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
                 </button>
               )}
 
-              {/* Claude card */}
               <button
                 onClick={handleChooseClaude}
                 className="flex flex-col items-center gap-3 p-6 bg-surface rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
@@ -352,49 +430,157 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
           </div>
         )}
 
-        {/* ─────── Step 2: Document Type ─────── */}
+        {/* ─────── Step 2: Document Type (Unified) ─────── */}
         {step === 'document' && (
           <div className="animate-fade-in">
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={handleChange}
-              onKeyDown={handleKeyDown}
-              placeholder="What do you want to write today?"
-              className="w-full text-xl font-[var(--font-body)] text-text bg-transparent border-b-2 border-border focus:border-amber outline-none pb-3 placeholder:text-ghost transition-colors"
-            />
+            {/* Zone A: Title + Text Input */}
+            <h2 className="text-center text-xl font-bold font-[var(--font-ui)] text-text mb-6">
+              What are you writing?
+            </h2>
 
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm font-[var(--font-ui)] text-ghost">
-                Try: PRFAQ, PRD, product pitch, pricing proposal, packaging, one-pager, launch brief
-              </p>
+            <div className="relative mb-6">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={handleChange}
+                onKeyDown={handleInputKeyDown}
+                placeholder="Type or pick a template below"
+                className="w-full text-lg font-[var(--font-body)] text-text bg-surface border-2 border-border rounded-xl px-5 py-3.5 pr-40 outline-none focus:border-amber transition-colors placeholder:text-ghost/50"
+              />
+              {detection && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium font-[var(--font-ui)] text-amber bg-amber/10 px-2.5 py-1 rounded-full">
+                  {detection.name} detected
+                </span>
+              )}
+            </div>
+
+            {/* Zone B: Template Card Grid */}
+            <div className="grid grid-cols-3 gap-3 mb-2">
+              {FEATURED_KEYS.map((key) => {
+                const t = TEMPLATES[key];
+                const isSelected = selectedTemplate?.key === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleSelectTemplate(key)}
+                    className={`flex items-center justify-center px-4 py-3.5 rounded-xl border-2 text-sm font-semibold font-[var(--font-ui)] transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-amber bg-amber/5 text-amber shadow-sm'
+                        : 'border-border bg-surface text-text hover:border-amber/50 hover:shadow-sm'
+                    }`}
+                  >
+                    {t.name}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Secondary templates toggle */}
+            {!showAllTemplates ? (
+              <button
+                onClick={() => setShowAllTemplates(true)}
+                className="flex items-center gap-1 mx-auto mt-2 mb-2 text-xs font-[var(--font-ui)] text-ghost hover:text-amber transition-colors cursor-pointer"
+              >
+                <ChevronRight size={12} />
+                {SECONDARY_KEYS.length} more templates
+              </button>
+            ) : (
+              <div className="animate-fade-in mt-3 mb-2">
+                <div className="grid grid-cols-3 gap-3">
+                  {SECONDARY_KEYS.map((key) => {
+                    const t = TEMPLATES[key];
+                    const isSelected = selectedTemplate?.key === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleSelectTemplate(key)}
+                        className={`flex items-center justify-center px-3 py-3 rounded-xl border-2 text-xs font-semibold font-[var(--font-ui)] transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-amber bg-amber/5 text-amber shadow-sm'
+                            : 'border-border bg-surface text-text/80 hover:border-amber/50 hover:shadow-sm'
+                        }`}
+                      >
+                        {t.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Zone C: Inline Preface Fields */}
+            {hasPreface && (
+              <div
+                key={selectedTemplate.key}
+                ref={prefaceContainerRef}
+                className="mt-6 pt-6 border-t border-border animate-fade-in"
+              >
+                <h3 className="text-lg font-bold font-[var(--font-ui)] text-text mb-1">
+                  Set up your {selectedTemplate.name}
+                </h3>
+                <p className="text-sm font-[var(--font-ui)] text-ghost mb-5">
+                  This helps Clarity coach you as you write. You can always edit these later.
+                </p>
+
+                <div className="space-y-4">
+                  {selectedTemplate.preface.map((field, index) => (
+                    <div key={field.key}>
+                      <label className="block text-sm font-medium font-[var(--font-ui)] text-text mb-1.5">
+                        {field.label}
+                      </label>
+                      <input
+                        ref={(el) => { prefaceRefs.current[index] = el; }}
+                        type="text"
+                        value={prefaceValues[field.key] || ''}
+                        onChange={(e) => setPrefaceValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                        onKeyDown={(e) => handlePrefaceKeyDown(e, index)}
+                        placeholder={field.placeholder}
+                        className="w-full text-base font-[var(--font-body)] text-text bg-surface border border-border rounded-lg px-4 py-3 outline-none focus:border-amber transition-colors placeholder:text-ghost/50"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-4 mt-6">
+                  <button
+                    onClick={handleSubmit}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-amber text-white font-[var(--font-ui)] font-medium text-sm rounded-lg hover:bg-amber/90 transition-colors cursor-pointer"
+                  >
+                    Start Writing
+                    <ArrowRight size={16} />
+                  </button>
+                  {!Object.values(prefaceValues).some((v) => v.trim().length > 0) && (
+                    <span className="text-xs font-[var(--font-ui)] text-ghost">
+                      You can skip these and fill them in later
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Start Writing for blank docs (no template selected but has text) */}
+            {!hasPreface && input.trim().length > 0 && !selectedTemplate && (
+              <button
+                onClick={handleSubmit}
+                className="mt-6 flex items-center gap-2 px-6 py-2.5 bg-amber text-white font-[var(--font-ui)] font-medium text-sm rounded-lg hover:bg-amber/90 transition-colors cursor-pointer"
+              >
+                Start Writing
+                <ArrowRight size={16} />
+              </button>
+            )}
+
+            {/* Provider label */}
+            <div className="flex justify-end mt-6">
               <button
                 onClick={onOpenSettings || (() => setStep('provider'))}
-                className="flex items-center gap-1.5 text-xs font-[var(--font-ui)] text-ghost hover:text-amber transition-colors cursor-pointer shrink-0 ml-4"
+                className="flex items-center gap-1.5 text-xs font-[var(--font-ui)] text-ghost hover:text-amber transition-colors cursor-pointer"
                 title="Change AI provider"
               >
                 <span>{providerLabel()}</span>
                 {getProvider() !== 'none' && <Check size={12} className="text-green-600" />}
               </button>
             </div>
-
-            {detection && (
-              <div className="mt-6 flex items-center gap-3 animate-fade-in">
-                <span className="text-sm font-[var(--font-ui)] text-text/70">
-                  Looks like a <span className="font-semibold text-amber">{detection.name}</span> — press Enter to start
-                </span>
-              </div>
-            )}
-
-            {input.trim().length > 0 && (
-              <button
-                onClick={handleStart}
-                className="mt-8 px-6 py-2.5 bg-amber text-white font-[var(--font-ui)] font-medium text-sm rounded-lg hover:bg-amber/90 transition-colors cursor-pointer"
-              >
-                Start Writing
-              </button>
-            )}
           </div>
         )}
       </div>

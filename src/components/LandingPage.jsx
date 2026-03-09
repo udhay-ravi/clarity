@@ -11,6 +11,7 @@ import {
   Zap,
   Eye,
 } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function LandingPage({ onGetStarted }) {
   return (
@@ -25,12 +26,15 @@ export default function LandingPage({ onGetStarted }) {
             Clarity
           </span>
         </div>
-        <button
-          onClick={onGetStarted}
-          className="text-sm font-[var(--font-ui)] font-medium text-amber hover:text-amber/80 transition-colors cursor-pointer"
-        >
-          Start Writing &rarr;
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={onGetStarted}
+            className="text-sm font-[var(--font-ui)] font-medium text-amber hover:text-amber/80 transition-colors cursor-pointer"
+          >
+            Start Writing &rarr;
+          </button>
+        </div>
       </nav>
 
       {/* ── Hero ── */}

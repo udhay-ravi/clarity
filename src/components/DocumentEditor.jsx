@@ -15,6 +15,7 @@ export default function DocumentEditor({
   onExportPdf,
   onExportDocx,
   onExportAll,
+  onOpenInGoogleDocs,
   onNewDoc,
   onGoToLibrary,
   onGoToLanding,
@@ -134,6 +135,7 @@ export default function DocumentEditor({
         onExportPdf={onExportPdf}
         onExportDocx={onExportDocx}
         onExportAll={onExportAll}
+        onOpenInGoogleDocs={onOpenInGoogleDocs}
         onNewDoc={onNewDoc}
         onGoToLibrary={onGoToLibrary}
         onGoToLanding={onGoToLanding}
