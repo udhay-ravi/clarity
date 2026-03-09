@@ -114,8 +114,22 @@ export const TEMPLATES = {
       { title: 'How It Works', placeholder: 'Walk through the customer experience step by step. Keep it to 3-4 steps. Each step should be an action the customer takes and what they get back. e.g. "1. Connect your inventory feed. 2. Set alert thresholds. 3. Get daily risk reports with recommended actions."' },
       { title: 'Executive Quote', placeholder: 'Write a quote from an internal leader (VP/SVP/GM) explaining why this matters strategically. Connect the product to company mission or market opportunity. e.g. "Our customers told us forecasting was their #1 pain point. Smart Insights is how we turn that pain into a reason to choose Acme." — Sarah Chen, SVP Product' },
       { title: 'Call to Action', placeholder: 'How do customers get started? What\'s the first step? e.g. "Smart Insights is available today for all Acme Pro customers. Visit acme.com/insights to enable it — setup takes under 5 minutes."' },
-      { title: 'Internal FAQ', placeholder: 'Answer the hard questions leadership will ask:\n• Why now? What changed in the market or our data?\n• What\'s the total addressable opportunity?\n• What are the key technical and execution risks?\n• What does this cost to build and maintain?\n• How does this fit our 3-year product strategy?\n• What are we choosing NOT to do in order to do this?' },
-      { title: 'External FAQ', placeholder: 'Answer the questions customers will ask:\n• How is this different from what you already offer?\n• Does this require any changes to my current setup?\n• What data do you need access to?\n• How accurate are the forecasts?\n• What does it cost / is it included in my plan?\n• Can I try it before committing?' },
+      { title: 'Internal FAQ', type: 'faq', placeholder: 'Answer the hard questions leadership will ask.', questions: [
+        'Why now? What changed in the market or our data?',
+        'What\'s the total addressable opportunity?',
+        'What are the key technical and execution risks?',
+        'What does this cost to build and maintain?',
+        'How does this fit our 3-year product strategy?',
+        'What are we choosing NOT to do in order to do this?',
+      ] },
+      { title: 'External FAQ', type: 'faq', placeholder: 'Answer the questions customers will ask.', questions: [
+        'How is this different from what you already offer?',
+        'Does this require any changes to my current setup?',
+        'What data do you need access to?',
+        'How accurate are the forecasts?',
+        'What does it cost / is it included in my plan?',
+        'Can I try it before committing?',
+      ] },
     ],
   },
   pricingProposal: {
@@ -284,6 +298,15 @@ export function createDocumentFromTemplate(template, prefaceValues = {}) {
       title: s.title,
       body: '',
       placeholder: s.placeholder,
+      ...(s.type === 'faq' && s.questions ? {
+        type: 'faq',
+        questions: s.questions.map((q) => ({
+          id: crypto.randomUUID(),
+          question: q,
+          answer: '',
+          content: null,
+        })),
+      } : {}),
     })),
   };
 }

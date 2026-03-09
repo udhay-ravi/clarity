@@ -4,6 +4,7 @@ import { useGhostText } from '../hooks/useGhostText';
 import { getGhostPrompt, getDimensionCoverage, getSectionDimensionCount } from '../lib/ghostPrompts';
 import { getClarityCheck, getSearchInsight, getGenText, getProvider, isAiEnabled } from '../lib/ai-provider';
 import TipTapBody from './TipTapBody';
+import FaqQuestionBox from './FaqQuestionBox';
 import InsertToolbar from './InsertToolbar';
 import ChartModal from './ChartModal';
 import TableToolbar from './TableToolbar';
@@ -42,6 +43,24 @@ export default function SectionBlock({
   const titleRef = useRef(null);
   const clarityAbortRef = useRef(null);
   const hasContent = section.body && section.body.trim().length > 0;
+  const isFaq = section.type === 'faq' && Array.isArray(section.questions);
+
+  // FAQ question update handler
+  const handleQuestionUpdate = useCallback(
+    (questionId, updates) => {
+      if (!isFaq) return;
+      const updatedQuestions = section.questions.map((q) =>
+        q.id === questionId ? { ...q, ...updates } : q
+      );
+      // Also aggregate all answers into body for export/search compatibility
+      const aggregatedBody = updatedQuestions
+        .filter((q) => q.answer && q.answer.trim())
+        .map((q) => `Q: ${q.question}\nA: ${q.answer}`)
+        .join('\n\n');
+      onUpdate({ ...section, questions: updatedQuestions, body: aggregatedBody });
+    },
+    [isFaq, section, onUpdate]
+  );
 
   // Build preface summary for ghost text context
   const prefaceSummary = useMemo(() => {
@@ -471,8 +490,8 @@ export default function SectionBlock({
           {section.title}
         </div>
 
-        {/* Dimension progress dots */}
-        {totalDimensions > 0 && hasBody && (
+        {/* Dimension progress dots (hidden for FAQ sections — each question is tracked separately) */}
+        {!isFaq && totalDimensions > 0 && hasBody && (
           <div className="flex items-center gap-1 mt-1 mb-3">
             {Array.from({ length: totalDimensions }).map((_, i) => (
               <div
@@ -489,72 +508,93 @@ export default function SectionBlock({
             )}
           </div>
         )}
-        {totalDimensions > 0 && !hasBody && (
+        {!isFaq && totalDimensions > 0 && !hasBody && (
           <div className="mb-3" />
         )}
 
-        {/* Insert toolbar (Image / Table / Chart) */}
-        <InsertToolbar editor={editorRef.current} onOpenChart={() => setShowChartModal(true)} />
+        {/* FAQ sections: render each question as a separate answerable box */}
+        {isFaq ? (
+          <div className="space-y-3">
+            {section.placeholder && (
+              <p className="text-sm font-[var(--font-ui)] text-ghost/50 mb-2">{section.placeholder}</p>
+            )}
+            {section.questions.map((q) => (
+              <FaqQuestionBox
+                key={q.id}
+                questionItem={q}
+                sectionTitle={section.title}
+                documentType={documentType}
+                prefaceContext={prefaceSummary}
+                onUpdate={handleQuestionUpdate}
+              />
+            ))}
+          </div>
+        ) : (
+          <>
+            {/* Insert toolbar (Image / Table / Chart) */}
+            <InsertToolbar editor={editorRef.current} onOpenChart={() => setShowChartModal(true)} />
 
-        {/* Table editing toolbar — shown when cursor is inside a table */}
-        {isInTable && <TableToolbar editor={editorRef.current} />}
+            {/* Table editing toolbar — shown when cursor is inside a table */}
+            {isInTable && <TableToolbar editor={editorRef.current} />}
 
-        {/* Section body with ghost text */}
-        <div className="relative">
-          <TipTapBody
-            ref={editorRef}
-            content={section.content}
-            placeholder={section.placeholder || 'Start writing...'}
-            onUpdate={handleBodyUpdate}
-            onFocus={handleBodyFocus}
-            onBlur={handleBodyBlur}
-            onKeyDown={handleBodyKeyDown}
-            onSelectionUpdate={handleSelectionUpdate}
-            onSearchCommand={handleSearchCommand}
-            onGenCommand={handleGenCommand}
-          />
+            {/* Section body with ghost text */}
+            <div className="relative">
+              <TipTapBody
+                ref={editorRef}
+                content={section.content}
+                placeholder={section.placeholder || 'Start writing...'}
+                onUpdate={handleBodyUpdate}
+                onFocus={handleBodyFocus}
+                onBlur={handleBodyBlur}
+                onKeyDown={handleBodyKeyDown}
+                onSelectionUpdate={handleSelectionUpdate}
+                onSearchCommand={handleSearchCommand}
+                onGenCommand={handleGenCommand}
+              />
 
-          {/* @search loading indicator */}
-          {searchLoading && (
-            <div className="flex items-center gap-2 mt-2 animate-ghost-in">
-              <Search size={14} className="text-amber animate-pulse" />
-              <span className="text-sm font-[var(--font-ui)] text-ghost/70">
-                Searching for insights...
-              </span>
-            </div>
-          )}
-
-          {/* @gen loading indicator */}
-          {genLoading && (
-            <div className="flex items-center gap-2 mt-2 animate-ghost-in">
-              <Sparkles size={14} className="text-amber animate-pulse" />
-              <span className="text-sm font-[var(--font-ui)] text-ghost/70">
-                Generating...
-              </span>
-            </div>
-          )}
-
-          {/* Ghost coaching — Q (thinking prompt) and R (recommended sentence) */}
-          {activeGhost && (
-            <div className="pointer-events-none animate-ghost-in mt-2 space-y-1">
-              {activeGhost.question && (
-                <div className="text-sm leading-relaxed text-ghost/70 font-[var(--font-ui)]">
-                  <span className="text-amber/70 font-semibold mr-1">Q:</span>
-                  {activeGhost.question}
-                </div>
-              )}
-              {activeGhost.recommendation && (
-                <div className="text-base leading-relaxed text-ghost italic font-[var(--font-body)]">
-                  <span className="not-italic text-amber/70 font-semibold font-[var(--font-ui)] text-sm mr-1">R:</span>
-                  {activeGhost.recommendation}
-                  <span className="ml-2 text-xs font-[var(--font-ui)] not-italic text-ghost/60 bg-bg px-1.5 py-0.5 rounded">
-                    Tab to accept
+              {/* @search loading indicator */}
+              {searchLoading && (
+                <div className="flex items-center gap-2 mt-2 animate-ghost-in">
+                  <Search size={14} className="text-amber animate-pulse" />
+                  <span className="text-sm font-[var(--font-ui)] text-ghost/70">
+                    Searching for insights...
                   </span>
                 </div>
               )}
+
+              {/* @gen loading indicator */}
+              {genLoading && (
+                <div className="flex items-center gap-2 mt-2 animate-ghost-in">
+                  <Sparkles size={14} className="text-amber animate-pulse" />
+                  <span className="text-sm font-[var(--font-ui)] text-ghost/70">
+                    Generating...
+                  </span>
+                </div>
+              )}
+
+              {/* Ghost coaching — Q (thinking prompt) and R (recommended sentence) */}
+              {activeGhost && (
+                <div className="pointer-events-none animate-ghost-in mt-2 space-y-1">
+                  {activeGhost.question && (
+                    <div className="text-sm leading-relaxed text-ghost/70 font-[var(--font-ui)]">
+                      <span className="text-amber/70 font-semibold mr-1">Q:</span>
+                      {activeGhost.question}
+                    </div>
+                  )}
+                  {activeGhost.recommendation && (
+                    <div className="text-base leading-relaxed text-ghost italic font-[var(--font-body)]">
+                      <span className="not-italic text-amber/70 font-semibold font-[var(--font-ui)] text-sm mr-1">R:</span>
+                      {activeGhost.recommendation}
+                      <span className="ml-2 text-xs font-[var(--font-ui)] not-italic text-ghost/60 bg-bg px-1.5 py-0.5 rounded">
+                        Tab to accept
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Clarity Check button — bottom-right, visible on hover (only when AI is enabled) */}
         {hasBody && getProvider() !== 'none' && (
