@@ -1,0 +1,81 @@
+/* ── TipTap / ProseMirror editor styles ── */
+
+.tiptap-body-editor {
+  min-height: 80px;
+  outline: none;
+  color: var(--color-text);
+}
+
+/* Placeholder */
+.tiptap-body-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-ghost);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Images */
+.tiptap-body-editor .tiptap-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 12px 0;
+  cursor: default;
+}
+
+.tiptap-body-editor .tiptap-image.ProseMirror-selectednode {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Tables */
+.tiptap-body-editor .tiptap-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.tiptap-body-editor .tiptap-table td,
+.tiptap-body-editor .tiptap-table th {
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+  min-width: 80px;
+  vertical-align: top;
+  position: relative;
+}
+
+.tiptap-body-editor .tiptap-table th {
+  background: var(--color-sidebar-bg);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tiptap-body-editor .tiptap-table td p,
+.tiptap-body-editor .tiptap-table th p {
+  margin: 0;
+}
+
+/* Selected table cell */
+.tiptap-body-editor .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-amber-light);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Paragraphs — remove default margins from ProseMirror */
+.tiptap-body-editor p {
+  margin: 0;
+}
+
+/* Selection color */
+.tiptap-body-editor ::selection {
+  background-color: var(--color-amber-light);
+}

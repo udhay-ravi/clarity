@@ -23,6 +23,8 @@ import { getProvider } from './lib/ai-provider';
 import { autoStartOllama } from './lib/ollama';
 import { exportToPdf } from './lib/exportPdf';
 import { exportToDocx } from './lib/exportDocx';
+import { migrateSections } from './lib/contentModel';
+import { walkTipTapContent } from './lib/tipTapWalker';
 
 const AUTOSAVE_INTERVAL = 10000;
 
@@ -40,11 +42,45 @@ function exportToMarkdown(doc) {
     if (section.title) {
       md += `## ${section.title}\n\n`;
     }
-    if (section.body) {
+    // Rich content path
+    if (section.content && section.content.content) {
+      md += sectionContentToMarkdown(section.content);
+    } else if (section.body) {
       md += `${section.body}\n\n`;
     }
   }
   return md.trim();
+}
+
+function sectionContentToMarkdown(content) {
+  let md = '';
+  walkTipTapContent(content, {
+    paragraph(runs) {
+      const line = runs
+        .map((r) => {
+          let t = r.text;
+          if (r.bold) t = `**${t}**`;
+          if (r.italic) t = `*${t}*`;
+          return t;
+        })
+        .join('');
+      md += `${line}\n\n`;
+    },
+    image(src, alt) {
+      md += `![${alt || 'image'}](${src})\n\n`;
+    },
+    tableStart() {},
+    tableRow(cells, isHeader) {
+      md += `| ${cells.join(' | ')} |\n`;
+      if (isHeader) {
+        md += `| ${cells.map(() => '---').join(' | ')} |\n`;
+      }
+    },
+    tableEnd() {
+      md += '\n';
+    },
+  });
+  return md;
 }
 
 function downloadMarkdown(doc) {
@@ -239,6 +275,8 @@ export default function App() {
   const handleOpenDoc = useCallback((id) => {
     const doc = loadDocument(id);
     if (doc) {
+      // Migrate sections to include TipTap content field if missing
+      doc.sections = migrateSections(doc.sections);
       setActiveDocId(id);
       setDocument(doc);
       setScreen('editor');

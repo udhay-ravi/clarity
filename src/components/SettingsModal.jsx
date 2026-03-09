@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Github, Type, ALargeSmall, Sun, Moon, Monitor } from 'lucide-react';
-import { getProvider, setProvider, getApiKey, setApiKey, hasApiKey, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady } from '../lib/ai-provider';
+import { getProvider, setProvider, getApiKey, setApiKey, hasApiKey, getOpenAIKey, setOpenAIKey, hasOpenAIKey, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady } from '../lib/ai-provider';
 
 // ── Persisted editor preferences ──────────────────────────────────
 const PREFS_KEY = 'clarity-editor-prefs';
@@ -24,12 +24,16 @@ export default function SettingsModal({ onClose }) {
   const [tab, setTab] = useState('ai'); // 'ai' | 'editor' | 'about'
   const [provider, setLocalProvider] = useState(getProvider());
   const [apiKeyInput, setApiKeyInput] = useState(getApiKey());
+  const [openaiKeyInput, setOpenaiKeyInput] = useState(getOpenAIKey());
   const [showKey, setShowKey] = useState(false);
+  const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [ollamaStatus, setOllamaStatus] = useState(null);
   const [ollamaModels, setOllamaModels] = useState([]);
   const [selectedModel, setSelectedModel] = useState(getOllamaModel());
   const [keyDeleted, setKeyDeleted] = useState(false);
+  const [openaiKeyDeleted, setOpenaiKeyDeleted] = useState(false);
   const apiKeyRef = useRef(null);
+  const openaiKeyRef = useRef(null);
 
   // Editor preferences
   const [prefs, setPrefs] = useState(getEditorPrefs);
@@ -83,6 +87,15 @@ export default function SettingsModal({ onClose }) {
     setTimeout(() => setKeyDeleted(false), 2000);
   };
 
+  const handleDeleteOpenAIKey = () => {
+    setOpenAIKey('');
+    setOpenaiKeyInput('');
+    setLocalProvider('none');
+    setProvider('none');
+    setOpenaiKeyDeleted(true);
+    setTimeout(() => setOpenaiKeyDeleted(false), 2000);
+  };
+
   const handleSave = useCallback(async () => {
     // Save editor prefs
     savePrefs(prefs);
@@ -120,8 +133,11 @@ export default function SettingsModal({ onClose }) {
     if (provider === 'claude' && apiKeyInput.trim() && apiKeyInput.trim() !== 'your_key_here') {
       setApiKey(apiKeyInput.trim());
     }
+    if (provider === 'openai' && openaiKeyInput.trim()) {
+      setOpenAIKey(openaiKeyInput.trim());
+    }
     onClose();
-  }, [provider, selectedModel, apiKeyInput, isElectron, onClose, prefs]);
+  }, [provider, selectedModel, apiKeyInput, openaiKeyInput, isElectron, onClose, prefs]);
 
   const handleRetrySetup = useCallback(async () => {
     setSetupRunning(true);
@@ -284,6 +300,50 @@ export default function SettingsModal({ onClose }) {
                           className="flex items-center gap-1.5 mt-2 text-[11px] font-[var(--font-ui)] text-red-500 hover:text-red-600 transition-colors cursor-pointer"
                         >
                           {keyDeleted ? <><Check size={10} /> Key deleted</> : <><Trash2 size={10} /> Delete my API key</>}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </label>
+
+              {/* OpenAI / GPT */}
+              <label className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                provider === 'openai' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+              }`}>
+                <input type="radio" name="provider" checked={provider === 'openai'} onChange={() => { setLocalProvider('openai'); setTimeout(() => openaiKeyRef.current?.focus(), 100); }} disabled={setupRunning} className="mt-0.5 accent-amber cursor-pointer" />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-amber" />
+                    <span className="text-sm font-medium font-[var(--font-ui)] text-text">OpenAI GPT</span>
+                    {hasOpenAIKey() && <Check size={12} className="text-green-600" />}
+                  </div>
+                  {provider === 'openai' && (
+                    <div className="mt-3">
+                      <div className="relative">
+                        <input ref={openaiKeyRef} type={showOpenAIKey ? 'text' : 'password'} value={openaiKeyInput} onChange={(e) => setOpenaiKeyInput(e.target.value)} placeholder="sk-..." className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-1.5 pr-8 outline-none focus:border-amber transition-colors" />
+                        <button onClick={() => setShowOpenAIKey(!showOpenAIKey)} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ghost hover:text-text transition-colors cursor-pointer">
+                          {showOpenAIKey ? <EyeOff size={12} /> : <Eye size={12} />}
+                        </button>
+                      </div>
+
+                      <div className="mt-2 p-2 bg-sidebar-bg rounded-md space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <Shield size={10} className="text-green-600 shrink-0" />
+                          <span className="text-[10px] font-[var(--font-ui)] text-text/70">Your key stays in your browser&apos;s local storage</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Shield size={10} className="text-green-600 shrink-0" />
+                          <span className="text-[10px] font-[var(--font-ui)] text-text/70">Sent directly to OpenAI&apos;s API — no middleman server</span>
+                        </div>
+                      </div>
+
+                      {hasOpenAIKey() && (
+                        <button
+                          onClick={handleDeleteOpenAIKey}
+                          className="flex items-center gap-1.5 mt-2 text-[11px] font-[var(--font-ui)] text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+                        >
+                          {openaiKeyDeleted ? <><Check size={10} /> Key deleted</> : <><Trash2 size={10} /> Delete my API key</>}
                         </button>
                       )}
                     </div>

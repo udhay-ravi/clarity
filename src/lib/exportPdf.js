@@ -1,10 +1,12 @@
 import { jsPDF } from 'jspdf';
+import { walkTipTapContent } from './tipTapWalker';
 
 /**
  * Generate and download a PDF from a Clarity document.
  *
  * A4 portrait, 20 mm margins, Helvetica font.
  * Title → 22 pt bold, preface → 11 pt, section headings → 15 pt bold, body → 11 pt.
+ * Supports rich content: images, tables, and plain text.
  */
 export function exportToPdf(doc) {
   const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -65,7 +67,11 @@ export function exportToPdf(doc) {
       y += headLines.length * 7 + 4;
     }
 
-    if (section.body) {
+    // Rich content path: use TipTap JSON if available
+    if (section.content && section.content.content) {
+      renderRichContent(pdf, section.content, margin, usableWidth, pageHeight, checkPageBreak);
+    } else if (section.body) {
+      // Legacy plain text path
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(11);
       const paragraphs = section.body.split('\n');
@@ -91,4 +97,70 @@ export function exportToPdf(doc) {
   const slug = (doc.title || 'untitled').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
   const date = new Date().toISOString().split('T')[0];
   pdf.save(`${slug}-${date}.pdf`);
+
+  // --- helpers ---
+
+  function renderRichContent(pdf, content, margin, usableWidth, pageHeight, checkPageBreak) {
+    walkTipTapContent(content, {
+      paragraph(runs) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        const text = runs.map((r) => r.text).join('');
+        if (!text.trim()) {
+          y += 4;
+          return;
+        }
+        const lines = pdf.splitTextToSize(text, usableWidth);
+        for (const line of lines) {
+          checkPageBreak(6);
+          pdf.text(line, margin, y);
+          y += 5;
+        }
+        y += 2;
+      },
+      image(src) {
+        if (!src) return;
+        try {
+          // Determine format from data URL
+          const isJpeg = src.includes('image/jpeg') || src.includes('image/jpg');
+          const format = isJpeg ? 'JPEG' : 'PNG';
+
+          // Fit image within usable width, max 80mm tall
+          const imgW = Math.min(usableWidth, 140);
+          const imgH = imgW * 0.6; // approximate aspect ratio
+          checkPageBreak(imgH + 4);
+          pdf.addImage(src, format, margin, y, imgW, imgH);
+          y += imgH + 4;
+        } catch (err) {
+          // Skip images that can't be rendered
+          console.warn('PDF image render failed:', err.message);
+        }
+      },
+      tableStart() {
+        y += 2;
+      },
+      tableRow(cells, isHeader) {
+        const colW = usableWidth / (cells.length || 1);
+        const rowH = 7;
+        checkPageBreak(rowH + 2);
+
+        cells.forEach((cell, i) => {
+          const x = margin + colW * i;
+          // Cell border
+          pdf.setDrawColor(200, 200, 200);
+          pdf.rect(x, y - 4, colW, rowH);
+          // Cell text
+          pdf.setFont('helvetica', isHeader ? 'bold' : 'normal');
+          pdf.setFontSize(isHeader ? 10 : 10);
+          const truncated = pdf.splitTextToSize(cell, colW - 4)[0] || '';
+          pdf.text(truncated, x + 2, y);
+        });
+
+        y += rowH;
+      },
+      tableEnd() {
+        y += 4;
+      },
+    });
+  }
 }

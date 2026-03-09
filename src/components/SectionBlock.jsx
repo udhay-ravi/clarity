@@ -3,6 +3,9 @@ import { ChevronUp, ChevronDown, Trash2, Plus, Loader2, X, Sparkles } from 'luci
 import { useGhostText } from '../hooks/useGhostText';
 import { getGhostPrompt, getDimensionCoverage, getSectionDimensionCount } from '../lib/ghostPrompts';
 import { getClarityCheck, getProvider } from '../lib/ai-provider';
+import TipTapBody from './TipTapBody';
+import InsertToolbar from './InsertToolbar';
+import ChartModal from './ChartModal';
 
 export default function SectionBlock({
   section,
@@ -28,7 +31,8 @@ export default function SectionBlock({
   const [clarityResults, setClarityResults] = useState(null);
   const [clarityLoading, setClarityLoading] = useState(false);
   const [clarityError, setClarityError] = useState(false);
-  const bodyRef = useRef(null);
+  const [showChartModal, setShowChartModal] = useState(false);
+  const editorRef = useRef(null);
   const titleRef = useRef(null);
   const clarityAbortRef = useRef(null);
   const hasContent = section.body && section.body.trim().length > 0;
@@ -111,22 +115,17 @@ export default function SectionBlock({
     };
   }, []);
 
-  // Sync contenteditable with state
-  useEffect(() => {
-    if (bodyRef.current && bodyRef.current.innerText !== section.body) {
-      bodyRef.current.innerText = section.body || '';
-    }
-  }, [section.id]);
-
-  const handleBodyInput = useCallback(() => {
-    const text = bodyRef.current?.innerText || '';
-    onUpdate({ ...section, body: text });
-    dismiss();
-    // Don't trigger new ghost text if section is already structurally complete
-    if (!sectionComplete) {
-      trigger(text);
-    }
-  }, [section, onUpdate, trigger, dismiss, sectionComplete]);
+  // TipTap body update handler
+  const handleBodyUpdate = useCallback(
+    (contentJson, textContent) => {
+      onUpdate({ ...section, body: textContent, content: contentJson });
+      dismiss();
+      if (!sectionComplete) {
+        trigger(textContent);
+      }
+    },
+    [section, onUpdate, trigger, dismiss, sectionComplete]
+  );
 
   const acceptGhostText = useCallback(() => {
     if (!activeGhost) return null;
@@ -141,18 +140,15 @@ export default function SectionBlock({
       if (e.key === 'Tab' && activeGhost?.recommendation) {
         e.preventDefault();
         const accepted = acceptGhostText();
-        if (accepted && bodyRef.current) {
-          const current = bodyRef.current.innerText || '';
-          const newText = current + (current.endsWith(' ') ? '' : ' ') + accepted;
-          bodyRef.current.innerText = newText;
-          onUpdate({ ...section, body: newText });
-          // Move cursor to end
-          const range = document.createRange();
-          const sel = window.getSelection();
-          range.selectNodeContents(bodyRef.current);
-          range.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(range);
+        if (accepted && editorRef.current) {
+          const editor = editorRef.current;
+          // Insert at end of document
+          const endPos = editor.state.doc.content.size;
+          const currentText = editor.getText();
+          const space = currentText.endsWith(' ') || !currentText ? '' : ' ';
+          editor.chain().focus('end').insertContent(space + accepted).run();
+          const newText = editor.getText();
+          onUpdate({ ...section, body: newText, content: editor.getJSON() });
           trigger(newText);
         }
       } else if (e.key === 'Escape') {
@@ -178,6 +174,15 @@ export default function SectionBlock({
     setIsFocused(false);
     onBlur?.();
   }, [onBlur]);
+
+  // Chart insert handler
+  const handleChartInsert = useCallback(
+    (pngDataUrl) => {
+      if (!editorRef.current) return;
+      editorRef.current.chain().focus().setImage({ src: pngDataUrl }).run();
+    },
+    []
+  );
 
   // Clarity Check handlers
   const handleClarityCheck = useCallback(async () => {
@@ -310,19 +315,19 @@ export default function SectionBlock({
           <div className="mb-3" />
         )}
 
+        {/* Insert toolbar (Image / Table / Chart) */}
+        <InsertToolbar editor={editorRef.current} onOpenChart={() => setShowChartModal(true)} />
+
         {/* Section body with ghost text */}
         <div className="relative">
-          <div
-            ref={bodyRef}
-            contentEditable
-            suppressContentEditableWarning
-            onInput={handleBodyInput}
-            onKeyDown={handleBodyKeyDown}
+          <TipTapBody
+            ref={editorRef}
+            content={section.content}
+            placeholder={section.placeholder || 'Start writing...'}
+            onUpdate={handleBodyUpdate}
             onFocus={handleBodyFocus}
             onBlur={handleBodyBlur}
-            data-placeholder={section.placeholder || 'Start writing...'}
-            className="min-h-[80px] text-text outline-none"
-            style={{ fontFamily: 'var(--editor-font, var(--font-body))', fontSize: 'var(--editor-size, 16px)', lineHeight: 'var(--editor-line-height, 1.75)' }}
+            onKeyDown={handleBodyKeyDown}
           />
 
           {/* Ghost coaching — Q (thinking prompt) and R (recommended sentence) */}
@@ -444,6 +449,13 @@ export default function SectionBlock({
         </button>
       </div>
 
+      {/* Chart modal */}
+      {showChartModal && (
+        <ChartModal
+          onInsert={handleChartInsert}
+          onClose={() => setShowChartModal(false)}
+        />
+      )}
     </div>
   );
 }
