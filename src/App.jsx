@@ -61,7 +61,7 @@ function downloadMarkdown(doc) {
 }
 
 export default function App() {
-  const { user, loading: authLoading, signIn, signOut: handleSignOut, isConfigured: authConfigured } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle, signUpWithEmail, signInWithEmail, signOut: handleSignOut, isConfigured: authConfigured } = useAuth();
   const [authError, setAuthError] = useState(null);
   const [screen, setScreen] = useState('loading');
   const [document, setDocument] = useState(null);
@@ -72,14 +72,14 @@ export default function App() {
   const handleOpenSettings = useCallback(() => setShowSettings(true), []);
   const handleCloseSettings = useCallback(() => setShowSettings(false), []);
 
-  const handleSignIn = useCallback(async () => {
+  const handleGoogleSignIn = useCallback(async () => {
     setAuthError(null);
     try {
-      await signIn();
+      await signInWithGoogle();
     } catch (err) {
       setAuthError(err.message || 'Sign-in failed. Please try again.');
     }
-  }, [signIn]);
+  }, [signInWithGoogle]);
   const { nudges, evaluate, dismissNudge, trackSectionVisit, clearSectionTimer } = useCoaching();
   const { grade: readabilityGrade, feedback: readabilityFeedback, compute: computeReadability } = useReadability();
   const autoSaveTimer = useRef(null);
@@ -323,7 +323,7 @@ export default function App() {
   // Auth gate: show login screen if Firebase is configured and user is not signed in
   if (authLoading) return null;
   if (authConfigured && !user) {
-    return <LoginScreen onSignIn={handleSignIn} error={authError} />;
+    return <LoginScreen onSignInWithGoogle={handleGoogleSignIn} onSignUpWithEmail={signUpWithEmail} onSignInWithEmail={signInWithEmail} error={authError} />;
   }
 
   if (screen === 'loading') return null;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { onAuthChange, signInWithGoogle, logOut, isFirebaseConfigured } from '../lib/firebase';
+import { onAuthChange, signInWithGoogle, signUpWithEmail, signInWithEmail, logOut, isFirebaseConfigured } from '../lib/firebase';
 
 export function useAuth() {
   const [user, setUser] = useState(null);
@@ -16,7 +16,9 @@ export function useAuth() {
   return {
     user,
     loading,
-    signIn: signInWithGoogle,
+    signInWithGoogle,
+    signUpWithEmail,
+    signInWithEmail,
     signOut: logOut,
     isConfigured: isFirebaseConfigured(),
   };

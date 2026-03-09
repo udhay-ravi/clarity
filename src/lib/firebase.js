@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 // ── Firebase Configuration ──────────────────────────────────────────
 // Set these values from your Firebase Console → Project Settings
@@ -25,6 +25,26 @@ export async function signInWithGoogle() {
     return null;
   }
   return signInWithPopup(auth, googleProvider);
+}
+
+export async function signUpWithEmail(email, password, displayName) {
+  if (!auth) {
+    console.warn('Firebase not configured. Skipping auth.');
+    return null;
+  }
+  const result = await createUserWithEmailAndPassword(auth, email, password);
+  if (displayName && result.user) {
+    await updateProfile(result.user, { displayName });
+  }
+  return result;
+}
+
+export async function signInWithEmail(email, password) {
+  if (!auth) {
+    console.warn('Firebase not configured. Skipping auth.');
+    return null;
+  }
+  return signInWithEmailAndPassword(auth, email, password);
 }
 
 export async function logOut() {

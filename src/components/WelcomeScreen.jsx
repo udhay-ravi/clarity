@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { PenLine, Key, Eye, EyeOff, Cpu, Sparkles, ArrowLeft, RefreshCw, Loader2, Check, ChevronDown } from 'lucide-react';
 import { useDocumentTemplate } from '../hooks/useDocumentTemplate';
-import { hasApiKey, getApiKey, setApiKey, getProvider, setProvider, checkOllama, listModels, getOllamaModel, setOllamaModel } from '../lib/ai-provider';
+import { hasApiKey, getApiKey, setApiKey, getProvider, setProvider, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp } from '../lib/ai-provider';
 
 export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }) {
   const [input, setInput] = useState('');
   const inputRef = useRef(null);
   const { detection, detect } = useDocumentTemplate();
   const [exiting, setExiting] = useState(false);
+  const isElectron = isElectronApp();
 
   // Provider selection state
   const providerConfigured = getProvider() !== 'none' || hasApiKey();
@@ -147,20 +148,22 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
               How would you like to power AI features?
             </p>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              {/* Ollama card */}
-              <button
-                onClick={handleChooseOllama}
-                className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
-              >
-                <Cpu size={28} className="text-ghost group-hover:text-amber transition-colors" />
-                <span className="text-sm font-semibold font-[var(--font-ui)] text-text">
-                  Local Model
-                </span>
-                <span className="text-xs font-[var(--font-ui)] text-ghost text-center leading-snug">
-                  Free &amp; private<br />Runs on your Mac via Ollama
-                </span>
-              </button>
+            <div className={`grid ${isElectron ? 'grid-cols-2' : 'grid-cols-1 max-w-xs mx-auto'} gap-4 mb-6`}>
+              {/* Ollama card — only in Electron (desktop) */}
+              {isElectron && (
+                <button
+                  onClick={handleChooseOllama}
+                  className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
+                >
+                  <Cpu size={28} className="text-ghost group-hover:text-amber transition-colors" />
+                  <span className="text-sm font-semibold font-[var(--font-ui)] text-text">
+                    Local Model
+                  </span>
+                  <span className="text-xs font-[var(--font-ui)] text-ghost text-center leading-snug">
+                    Free &amp; private<br />Runs on your Mac via Ollama
+                  </span>
+                </button>
+              )}
 
               {/* Claude card */}
               <button

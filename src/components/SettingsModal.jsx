@@ -189,8 +189,8 @@ export default function SettingsModal({ onClose }) {
             AI Provider
           </div>
 
-          {/* ── Ollama Option ── */}
-          <label
+          {/* ── Ollama Option (Electron/desktop only) ── */}
+          {isElectron && <label
             className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
               provider === 'ollama' ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
             }`}
@@ -269,7 +269,7 @@ export default function SettingsModal({ onClose }) {
                 </div>
               )}
             </div>
-          </label>
+          </label>}
 
           {/* ── Claude Option ── */}
           <label
