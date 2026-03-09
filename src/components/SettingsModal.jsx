@@ -11,7 +11,7 @@ function loadPrefs() {
   } catch { return {}; }
 }
 
-function savePrefs(prefs) {
+export function savePrefs(prefs) {
   localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
 }
 

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { PenLine, FilePlus, Check, Library, Settings, LogOut } from 'lucide-react';
 import ExportMenu from './ExportMenu';
+import ThemeToggle from './ThemeToggle';
 
 export default function Toolbar({
   document,
@@ -9,6 +10,7 @@ export default function Toolbar({
   onExportPdf,
   onExportDocx,
   onExportAll,
+  onOpenInGoogleDocs,
   onNewDoc,
   onGoToLibrary,
   onGoToLanding,
@@ -79,6 +81,7 @@ export default function Toolbar({
             onExportPdf={onExportPdf}
             onExportDocx={onExportDocx}
             onExportAll={onExportAll}
+            onOpenInGoogleDocs={onOpenInGoogleDocs}
           />
           <button
             onClick={onNewDoc}
@@ -96,6 +99,7 @@ export default function Toolbar({
             <Library size={16} />
             My Docs
           </button>
+          <ThemeToggle />
           <button
             onClick={onOpenSettings}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-surface rounded-md transition-colors cursor-pointer"
