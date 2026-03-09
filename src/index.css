@@ -71,6 +71,7 @@ body {
 [contenteditable]:empty::before {
   content: attr(data-placeholder);
   color: var(--color-ghost);
+  opacity: 0.5;
   pointer-events: none;
 }
 

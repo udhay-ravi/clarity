@@ -486,7 +486,7 @@ export default function SettingsModal({ onClose }) {
               <div className="text-center py-4">
                 <span className="text-3xl">&#9998;</span>
                 <h3 className="text-lg font-bold font-[var(--font-ui)] text-text mt-2">Clarity</h3>
-                <p className="text-xs font-[var(--font-ui)] text-ghost mt-1">AI-powered writing assistant for PMs</p>
+                <p className="text-xs font-[var(--font-ui)] text-ghost mt-1">AI-powered thinking assistant for PMs</p>
               </div>
 
               <div className="space-y-2">
