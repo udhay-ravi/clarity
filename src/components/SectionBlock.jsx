@@ -338,8 +338,12 @@ export default function SectionBlock({
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className={`relative pl-6 pr-4 py-5 rounded-lg transition-all duration-200 ${
-          hasContent ? 'border-l-2 border-l-amber' : 'border-l-2 border-l-transparent'
+        className={`relative pl-6 pr-4 py-5 transition-all duration-200 border ${
+          isFocused
+            ? 'border-amber/50 bg-amber/[0.02]'
+            : hasContent
+              ? 'border-border'
+              : 'border-border/40'
         }`}
       >
         {/* Reorder + delete controls */}
