@@ -5,8 +5,6 @@ import PrefaceScreen from './components/PrefaceScreen';
 import DocumentEditor from './components/DocumentEditor';
 import DocumentLibrary from './components/DocumentLibrary';
 import SettingsModal, { applyEditorPrefs, getEditorPrefs } from './components/SettingsModal';
-import LoginScreen from './components/LoginScreen';
-import { useAuth } from './hooks/useAuth';
 import { useCoaching } from './hooks/useCoaching';
 import { useReadability } from './hooks/useReadability';
 import { createDocumentFromTemplate, createBlankDocument } from './lib/templates';
@@ -97,8 +95,6 @@ function downloadMarkdown(doc) {
 }
 
 export default function App() {
-  const { user, loading: authLoading, signInWithGoogle, signUpWithEmail, signInWithEmail, signOut: handleSignOut, isConfigured: authConfigured } = useAuth();
-  const [authError, setAuthError] = useState(null);
   const [screen, setScreen] = useState('loading');
   const [document, setDocument] = useState(null);
   const [saveStatus, setSaveStatus] = useState(null);
@@ -108,14 +104,6 @@ export default function App() {
   const handleOpenSettings = useCallback(() => setShowSettings(true), []);
   const handleCloseSettings = useCallback(() => setShowSettings(false), []);
 
-  const handleGoogleSignIn = useCallback(async () => {
-    setAuthError(null);
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      setAuthError(err.message || 'Sign-in failed. Please try again.');
-    }
-  }, [signInWithGoogle]);
   const { nudges, evaluate, dismissNudge, trackSectionVisit, clearSectionTimer } = useCoaching();
   const { grade: readabilityGrade, feedback: readabilityFeedback, compute: computeReadability } = useReadability();
   const autoSaveTimer = useRef(null);
@@ -368,12 +356,6 @@ export default function App() {
   // Render
   // ---------------------------------------------------------------------------
 
-  // Auth gate: show login screen if Firebase is configured and user is not signed in
-  if (authLoading) return null;
-  if (authConfigured && !user) {
-    return <LoginScreen onSignInWithGoogle={handleGoogleSignIn} onSignUpWithEmail={signUpWithEmail} onSignInWithEmail={signInWithEmail} error={authError} />;
-  }
-
   if (screen === 'loading') return null;
 
   if (screen === 'landing') {
@@ -434,8 +416,8 @@ export default function App() {
           onGoToLibrary={handleGoToLibrary}
           onGoToLanding={handleGoToLanding}
           onOpenSettings={handleOpenSettings}
-          onSignOut={authConfigured ? handleSignOut : null}
-          user={user}
+          onSignOut={null}
+          user={null}
           saveStatus={saveStatus}
           readabilityGrade={readabilityGrade}
           readabilityFeedback={readabilityFeedback}
