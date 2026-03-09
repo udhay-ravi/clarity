@@ -364,6 +364,10 @@ export default function SettingsModal({ onClose }) {
                   <p className="text-xs font-[var(--font-ui)] text-ghost mt-1">Templates and coaching still work. Ghost text will be disabled.</p>
                 </div>
               </label>
+
+              <p className="text-[10px] font-[var(--font-ui)] text-ghost/60 text-center pt-1">
+                This can be changed or deselected later under Settings.
+              </p>
             </div>
           )}
 

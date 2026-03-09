@@ -1,6 +1,6 @@
-import { getApiKey, setApiKey, hasApiKey, getGhostText as claudeGhostText, getTemplateExample as claudeTemplateExample, getClarityCheck as claudeClarityCheck, getCoachingNudge as claudeCoachingNudge } from './anthropic';
-import { getOpenAIKey, setOpenAIKey, hasOpenAIKey, getGhostText as openaiGhostText, getTemplateExample as openaiTemplateExample, getClarityCheck as openaiClarityCheck, getCoachingNudge as openaiCoachingNudge } from './openai';
-import { checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady, autoStartOllama, getGhostText as ollamaGhostText, getTemplateExample as ollamaTemplateExample, getClarityCheck as ollamaClarityCheck, getCoachingNudge as ollamaCoachingNudge } from './ollama';
+import { getApiKey, setApiKey, hasApiKey, getGhostText as claudeGhostText, getTemplateExample as claudeTemplateExample, getClarityCheck as claudeClarityCheck, getCoachingNudge as claudeCoachingNudge, getSearchInsight as claudeSearchInsight } from './anthropic';
+import { getOpenAIKey, setOpenAIKey, hasOpenAIKey, getGhostText as openaiGhostText, getTemplateExample as openaiTemplateExample, getClarityCheck as openaiClarityCheck, getCoachingNudge as openaiCoachingNudge, getSearchInsight as openaiSearchInsight } from './openai';
+import { checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady, autoStartOllama, getGhostText as ollamaGhostText, getTemplateExample as ollamaTemplateExample, getClarityCheck as ollamaClarityCheck, getCoachingNudge as ollamaCoachingNudge, getSearchInsight as ollamaSearchInsight } from './ollama';
 
 const PROVIDER_KEY = 'clarity-ai-provider';
 
@@ -59,5 +59,13 @@ export async function getCoachingNudge(params) {
   if (p === 'claude') return claudeCoachingNudge(params);
   if (p === 'openai') return openaiCoachingNudge(params);
   if (p === 'ollama') return ollamaCoachingNudge(params);
+  return null;
+}
+
+export async function getSearchInsight(params) {
+  const p = getProvider();
+  if (p === 'claude') return claudeSearchInsight(params);
+  if (p === 'openai') return openaiSearchInsight(params);
+  if (p === 'ollama') return ollamaSearchInsight(params);
   return null;
 }

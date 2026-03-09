@@ -131,3 +131,23 @@ Return ONLY the question. No preamble.`;
 
   return callOpenAI({ system, userMessage: documentContent, maxTokens: 40, signal });
 }
+
+export async function getSearchInsight({ query, sectionTitle, documentContext, signal }) {
+  const system = `You are a market research assistant for product managers. Given a search query and document context, provide specific, data-driven insights that the PM can use in their writing.
+
+Rules:
+- Return EXACTLY 2 sentences of actionable insight.
+- Use specific numbers, company names, market data, and trends where possible.
+- Write in a factual, professional tone suitable for direct insertion into a PM document.
+- Focus on the most relevant and impactful information for the query.
+- Do NOT use hedging language like "it appears" or "it seems" — be direct.
+- Do NOT include any preamble, citation, or source attribution — just the 2 sentences.`;
+
+  const userMsg = `Search query: ${query}
+Section: ${sectionTitle || 'General'}
+Document context: ${documentContext || 'A product management document'}
+
+Provide 2 sentences of insight.`;
+
+  return callOpenAI({ system, userMessage: userMsg, maxTokens: 150, signal });
+}
