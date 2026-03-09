@@ -214,3 +214,15 @@ Provide 2 sentences of insight.`;
 
   return callOllama({ system, userMessage, maxTokens: 150, temperature: 0.5, signal });
 }
+
+export async function getGenText({ instruction, sectionTitle, documentContext, signal }) {
+  const system = `You are a writing assistant for product managers. Given an instruction and document context, generate exactly one sentence that follows the instruction. Be specific, data-informed, and match the document's tone. Return only the sentence, nothing else.`;
+
+  const userMessage = `Instruction: ${instruction}
+Section: ${sectionTitle || 'General'}
+Context: ${documentContext || 'A product management document'}
+
+Generate one sentence.`;
+
+  return callOllama({ system, userMessage, maxTokens: 100, temperature: 0.6, signal });
+}

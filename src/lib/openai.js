@@ -151,3 +151,15 @@ Provide 2 sentences of insight.`;
 
   return callOpenAI({ system, userMessage: userMsg, maxTokens: 150, signal });
 }
+
+export async function getGenText({ instruction, sectionTitle, documentContext, signal }) {
+  const system = `You are a writing assistant for product managers. Given an instruction and document context, generate exactly one sentence that follows the instruction. Be specific, data-informed, and match the document's tone. Return only the sentence, nothing else.`;
+
+  const userMsg = `Instruction: ${instruction}
+Section: ${sectionTitle || 'General'}
+Context: ${documentContext || 'A product management document'}
+
+Generate one sentence.`;
+
+  return callOpenAI({ system, userMessage: userMsg, maxTokens: 100, signal });
+}

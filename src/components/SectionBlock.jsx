@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { ChevronUp, ChevronDown, Trash2, Plus, Loader2, X, Sparkles, Search } from 'lucide-react';
 import { useGhostText } from '../hooks/useGhostText';
 import { getGhostPrompt, getDimensionCoverage, getSectionDimensionCount } from '../lib/ghostPrompts';
-import { getClarityCheck, getSearchInsight, getProvider, isAiEnabled } from '../lib/ai-provider';
+import { getClarityCheck, getSearchInsight, getGenText, getProvider, isAiEnabled } from '../lib/ai-provider';
 import TipTapBody from './TipTapBody';
 import InsertToolbar from './InsertToolbar';
 import ChartModal from './ChartModal';
@@ -35,7 +35,9 @@ export default function SectionBlock({
   const [showChartModal, setShowChartModal] = useState(false);
   const [isInTable, setIsInTable] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [genLoading, setGenLoading] = useState(false);
   const searchAbortRef = useRef(null);
+  const genAbortRef = useRef(null);
   const editorRef = useRef(null);
   const titleRef = useRef(null);
   const clarityAbortRef = useRef(null);
@@ -273,10 +275,86 @@ export default function SectionBlock({
     [searchLoading, section, prefaceSummary, onUpdate]
   );
 
-  // Cleanup search abort on unmount
+  // @gen command handler
+  const handleGenCommand = useCallback(
+    async ({ instruction, from, to }) => {
+      const editor = editorRef.current;
+      if (!editor) return;
+
+      if (!isAiEnabled()) {
+        editor.chain().focus().setTextSelection({ from, to }).deleteSelection()
+          .insertContent('[Enable an AI provider in Settings to use @gen]').run();
+        return;
+      }
+
+      if (genLoading) return;
+
+      if (genAbortRef.current) genAbortRef.current.abort();
+      const controller = new AbortController();
+      genAbortRef.current = controller;
+
+      editor.chain().focus().setTextSelection({ from, to }).deleteSelection().insertContent('Generating...').run();
+      setGenLoading(true);
+
+      try {
+        const result = await getGenText({
+          instruction,
+          sectionTitle: section.title,
+          documentContext: prefaceSummary || section.body,
+          signal: controller.signal,
+        });
+
+        if (result && !controller.signal.aborted) {
+          const doc = editor.state.doc;
+          let genFrom = null;
+          let genTo = null;
+          doc.descendants((node, pos) => {
+            if (genFrom !== null) return false;
+            if (node.isText && node.text.includes('Generating...')) {
+              const idx = node.text.indexOf('Generating...');
+              genFrom = pos + idx;
+              genTo = pos + idx + 'Generating...'.length;
+              return false;
+            }
+          });
+          if (genFrom !== null) {
+            editor.chain().focus().setTextSelection({ from: genFrom, to: genTo }).deleteSelection().insertContent(result).run();
+          }
+          const newText = editor.getText();
+          onUpdate({ ...section, body: newText, content: editor.getJSON() });
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          const doc = editor.state.doc;
+          let genFrom = null;
+          let genTo = null;
+          doc.descendants((node, pos) => {
+            if (genFrom !== null) return false;
+            if (node.isText && node.text.includes('Generating...')) {
+              const idx = node.text.indexOf('Generating...');
+              genFrom = pos + idx;
+              genTo = pos + idx + 'Generating...'.length;
+              return false;
+            }
+          });
+          if (genFrom !== null) {
+            editor.chain().focus().setTextSelection({ from: genFrom, to: genTo }).deleteSelection().insertContent(`[Generation failed: ${instruction}]`).run();
+          }
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setGenLoading(false);
+        }
+      }
+    },
+    [genLoading, section, prefaceSummary, onUpdate]
+  );
+
+  // Cleanup search/gen abort on unmount
   useEffect(() => {
     return () => {
       if (searchAbortRef.current) searchAbortRef.current.abort();
+      if (genAbortRef.current) genAbortRef.current.abort();
     };
   }, []);
 
@@ -433,6 +511,7 @@ export default function SectionBlock({
             onKeyDown={handleBodyKeyDown}
             onSelectionUpdate={handleSelectionUpdate}
             onSearchCommand={handleSearchCommand}
+            onGenCommand={handleGenCommand}
           />
 
           {/* @search loading indicator */}
@@ -441,6 +520,16 @@ export default function SectionBlock({
               <Search size={14} className="text-amber animate-pulse" />
               <span className="text-sm font-[var(--font-ui)] text-ghost/70">
                 Searching for insights...
+              </span>
+            </div>
+          )}
+
+          {/* @gen loading indicator */}
+          {genLoading && (
+            <div className="flex items-center gap-2 mt-2 animate-ghost-in">
+              <Sparkles size={14} className="text-amber animate-pulse" />
+              <span className="text-sm font-[var(--font-ui)] text-ghost/70">
+                Generating...
               </span>
             </div>
           )}

@@ -10,6 +10,8 @@ import {
   ArrowRight,
   Zap,
   Eye,
+  Search,
+  Wand2,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
@@ -141,6 +143,16 @@ export default function LandingPage({ onGetStarted, authEnabled }) {
             title="Multi-Format Export"
             description="Export to Markdown, PDF, or Word (.docx) with one click. Or export all three at once."
           />
+          <FeatureCard
+            icon={<Search size={18} />}
+            title="@search Inline Research"
+            description="Type @search followed by a question to get instant market research and data points inserted right where you're writing."
+          />
+          <FeatureCard
+            icon={<Wand2 size={18} />}
+            title="@gen Sentence Generation"
+            description="Type @gen followed by an instruction to generate a sentence in context. e.g. &quot;@gen write about impact for ELT&quot; produces tailored copy."
+          />
         </div>
       </section>
 
@@ -205,7 +217,7 @@ export default function LandingPage({ onGetStarted, authEnabled }) {
             </span>
           </div>
           <p className="text-xs font-[var(--font-ui)] text-ghost/60">
-            Open source PM thinking assistant &middot; Built with React &amp; Vite
+            PM thinking assistant &middot; Built with React &amp; Vite
           </p>
         </div>
       </footer>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Github, Type, ALargeSmall, Sun, Moon, Monitor } from 'lucide-react';
+import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Type, ALargeSmall, Sun, Moon, Monitor } from 'lucide-react';
 import { getProvider, setProvider, getApiKey, setApiKey, hasApiKey, getOpenAIKey, setOpenAIKey, hasOpenAIKey, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady } from '../lib/ai-provider';
 
 // ── Persisted editor preferences ──────────────────────────────────
@@ -285,12 +285,6 @@ export default function SettingsModal({ onClose }) {
                           <Shield size={10} className="text-green-600 shrink-0" />
                           <span className="text-[10px] font-[var(--font-ui)] text-text/70">Sent directly to Anthropic&apos;s API — no middleman server</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <Github size={10} className="text-ghost shrink-0" />
-                          <span className="text-[10px] font-[var(--font-ui)] text-text/70">
-                            Open source — <a href="https://github.com/udhay-ravi/clarity" target="_blank" rel="noopener noreferrer" className="text-amber underline">verify the code</a>
-                          </span>
-                        </div>
                       </div>
 
                       {/* Delete key */}
@@ -490,19 +484,6 @@ export default function SettingsModal({ onClose }) {
               </div>
 
               <div className="space-y-2">
-                <a
-                  href="https://github.com/udhay-ravi/clarity"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-amber/40 transition-all"
-                >
-                  <Github size={16} className="text-text" />
-                  <div>
-                    <span className="text-sm font-medium font-[var(--font-ui)] text-text">Source Code</span>
-                    <p className="text-[10px] font-[var(--font-ui)] text-ghost">Open source on GitHub</p>
-                  </div>
-                </a>
-
                 <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
                   <Shield size={16} className="text-green-600" />
                   <div>

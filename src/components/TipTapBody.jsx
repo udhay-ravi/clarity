@@ -11,12 +11,14 @@ import { compressImageToDataUrl } from '../lib/imageUtils';
 import './TipTapBody.css';
 
 const TipTapBody = forwardRef(function TipTapBody(
-  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand },
+  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand, onGenCommand },
   ref
 ) {
   const suppressUpdateRef = useRef(false);
   const searchCbRef = useRef(onSearchCommand);
   searchCbRef.current = onSearchCommand;
+  const genCbRef = useRef(onGenCommand);
+  genCbRef.current = onGenCommand;
 
   const editor = useEditor({
     extensions: [
@@ -69,8 +71,14 @@ const TipTapBody = forwardRef(function TipTapBody(
           if (searchMatch) {
             event.preventDefault();
             const query = searchMatch[1].trim();
-            // Get the position range of the @search line to replace later
             searchCbRef.current?.({ query, from: lineStart, to: $from.pos });
+            return true;
+          }
+          const genMatch = lineText.match(/^@gen\s+(.+)/i);
+          if (genMatch) {
+            event.preventDefault();
+            const instruction = genMatch[1].trim();
+            genCbRef.current?.({ instruction, from: lineStart, to: $from.pos });
             return true;
           }
         }
