@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import {
   PenLine,
   LayoutTemplate,
@@ -68,9 +69,14 @@ export default function LandingPage({ onGetStarted }) {
         </div>
       </section>
 
+      {/* ── Product Demo ── */}
+      <section className="px-8 pb-20 max-w-4xl mx-auto">
+        <ProductDemo />
+      </section>
+
       {/* ── Value Props ── */}
       <section className="px-8 pb-20 max-w-4xl mx-auto">
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <ValueCard
             icon={<ShieldCheck size={20} />}
             title="100% Local"
@@ -100,7 +106,7 @@ export default function LandingPage({ onGetStarted }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <FeatureCard
             icon={<LayoutTemplate size={18} />}
             title="Structure Guides"
@@ -142,7 +148,7 @@ export default function LandingPage({ onGetStarted }) {
           </h2>
         </div>
 
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           <StepCard
             number="1"
             title="Pick a template"
@@ -214,7 +220,221 @@ export default function LandingPage({ onGetStarted }) {
         section:nth-child(4) { animation-delay: 0.15s; }
         section:nth-child(5) { animation-delay: 0.2s; }
         section:nth-child(6) { animation-delay: 0.25s; }
+        section:nth-child(7) { animation-delay: 0.3s; }
       `}</style>
+    </div>
+  );
+}
+
+// ── Product Demo ──────────────────────────────────────────────────
+
+const DEMO_SCREENS = [
+  {
+    label: 'Pick a template',
+    content: (
+      <div className="p-5 space-y-3">
+        <div className="text-center mb-4">
+          <div className="text-sm font-semibold text-text/80 mb-1">What are you writing?</div>
+          <div className="w-64 mx-auto h-9 rounded-lg border border-amber/40 bg-white flex items-center px-3">
+            <span className="text-xs text-text/70">PRD for checkout redesign</span>
+            <span className="ml-auto text-[10px] text-amber font-medium">PRD detected</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+          {['PRD', 'PRFAQ', 'One-Pager', 'Product Pitch', 'Launch Brief', 'Pricing Rec'].map((t) => (
+            <div
+              key={t}
+              className={`text-[10px] font-medium text-center py-2 rounded-lg border transition-all ${
+                t === 'PRD'
+                  ? 'bg-amber/10 border-amber text-amber'
+                  : 'bg-white border-border text-ghost'
+              }`}
+            >
+              {t}
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    label: 'Write with ghost text',
+    content: (
+      <div className="p-5">
+        <div className="text-xs font-semibold text-text/60 mb-1">Executive Summary</div>
+        <div className="space-y-1 mb-3">
+          <div className="h-[3px] bg-text/20 rounded w-full" />
+          <div className="h-[3px] bg-text/20 rounded w-11/12" />
+          <div className="h-[3px] bg-text/20 rounded w-9/12" />
+        </div>
+        <div className="text-xs font-semibold text-text/60 mb-1 mt-4">Problem Statement</div>
+        <div className="text-[11px] text-text/70 leading-relaxed mb-2">
+          Today, users abandon checkout at a 68% rate because the flow requires too many steps and...
+        </div>
+        <div className="space-y-1.5 animate-ghost-in">
+          <div className="text-[10px] text-ghost/60">
+            <span className="text-amber/70 font-semibold mr-1">Q:</span>
+            What specific user segments are most affected?
+          </div>
+          <div className="text-[10px] text-ghost italic">
+            <span className="not-italic text-amber/70 font-semibold mr-1">R:</span>
+            Mobile users on iOS experience a 12% higher drop-off rate...
+            <span className="ml-1 text-[8px] not-italic text-ghost/50 bg-bg px-1 py-0.5 rounded">Tab</span>
+          </div>
+        </div>
+        {/* Progress dots */}
+        <div className="flex items-center gap-1 mt-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber" />
+          <div className="w-1.5 h-1.5 rounded-full bg-amber" />
+          <div className="w-1.5 h-1.5 rounded-full bg-border" />
+          <div className="w-1.5 h-1.5 rounded-full bg-border" />
+          <span className="text-[8px] text-ghost/50 ml-1">2 of 4 dimensions</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    label: 'Run Clarity Check',
+    content: (
+      <div className="p-5">
+        <div className="text-xs font-semibold text-text/60 mb-1">Goals & Success Metrics</div>
+        <div className="space-y-1 mb-3">
+          <div className="h-[3px] bg-text/20 rounded w-full" />
+          <div className="h-[3px] bg-text/20 rounded w-10/12" />
+          <div className="h-[3px] bg-text/20 rounded w-8/12" />
+        </div>
+        {/* Clarity Check result */}
+        <div className="border-l-2 border-l-amber bg-amber-light/30 rounded-r-lg px-3 py-2.5 mt-2">
+          <div className="text-[8px] font-semibold text-amber uppercase tracking-wider mb-1.5">
+            Clarity Check
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-[10px] text-text/70 leading-snug">
+              <span className="text-amber mr-1">→</span>
+              Success metrics lack baselines — what is the current checkout completion rate?
+            </p>
+            <p className="text-[10px] text-text/70 leading-snug">
+              <span className="text-amber mr-1">→</span>
+              "Improve conversion" is vague — specify a target percentage and timeframe.
+            </p>
+            <p className="text-[10px] text-text/70 leading-snug">
+              <span className="text-amber mr-1">→</span>
+              Consider adding a counter-metric to guard against quality trade-offs.
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    label: 'Export anywhere',
+    content: (
+      <div className="p-5 flex flex-col items-center justify-center h-full">
+        <div className="w-48 bg-white border border-border rounded-lg p-3 mb-4 shadow-sm">
+          <div className="text-[10px] font-semibold text-text/70 mb-2">Checkout Redesign PRD</div>
+          <div className="space-y-1.5">
+            <div className="h-[3px] bg-text/15 rounded w-full" />
+            <div className="h-[3px] bg-text/15 rounded w-11/12" />
+            <div className="h-[3px] bg-text/15 rounded w-9/12" />
+            <div className="h-[3px] bg-text/15 rounded w-full" />
+            <div className="h-[3px] bg-text/15 rounded w-7/12" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {[
+            { ext: '.md', color: 'bg-text/80' },
+            { ext: '.pdf', color: 'bg-red-500' },
+            { ext: '.docx', color: 'bg-blue-500' },
+          ].map((f) => (
+            <div key={f.ext} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-white">
+              <div className={`w-4 h-5 rounded-sm ${f.color} flex items-center justify-center`}>
+                <span className="text-[6px] font-bold text-white">{f.ext}</span>
+              </div>
+              <span className="text-[10px] font-medium text-text/70">{f.ext.slice(1).toUpperCase()}</span>
+            </div>
+          ))}
+        </div>
+        <div className="text-[9px] text-ghost/50 mt-3">One-click export to all formats</div>
+      </div>
+    ),
+  },
+];
+
+function ProductDemo() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const next = useCallback(() => {
+    setActiveIdx((i) => (i + 1) % DEMO_SCREENS.length);
+  }, []);
+
+  useEffect(() => {
+    if (paused) return;
+    const timer = setInterval(next, 4000);
+    return () => clearInterval(timer);
+  }, [paused, next]);
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Browser chrome */}
+      <div className="bg-white rounded-2xl border border-border shadow-xl overflow-hidden">
+        {/* Title bar */}
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-sidebar-bg border-b border-border">
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-400/70" />
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/70" />
+            <div className="w-2.5 h-2.5 rounded-full bg-green-400/70" />
+          </div>
+          <div className="flex-1 flex justify-center">
+            <div className="text-[10px] font-[var(--font-ui)] text-ghost/60 bg-bg rounded-md px-3 py-0.5 border border-border/60">
+              clarity.app
+            </div>
+          </div>
+        </div>
+
+        {/* Screen content */}
+        <div className="relative h-[260px] bg-bg overflow-hidden">
+          {DEMO_SCREENS.map((screen, i) => (
+            <div
+              key={i}
+              className="absolute inset-0 transition-all duration-500 ease-in-out"
+              style={{
+                opacity: i === activeIdx ? 1 : 0,
+                transform: i === activeIdx ? 'translateY(0)' : 'translateY(12px)',
+                pointerEvents: i === activeIdx ? 'auto' : 'none',
+              }}
+            >
+              {screen.content}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step indicators */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mt-5 justify-items-center">
+        {DEMO_SCREENS.map((screen, i) => (
+          <button
+            key={i}
+            onClick={() => setActiveIdx(i)}
+            className={`flex items-center gap-1.5 text-xs font-[var(--font-ui)] transition-all cursor-pointer ${
+              i === activeIdx
+                ? 'text-amber font-semibold'
+                : 'text-ghost/50 hover:text-ghost'
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                i === activeIdx ? 'bg-amber' : 'bg-border'
+              }`}
+            />
+            {screen.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
