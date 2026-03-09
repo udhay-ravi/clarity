@@ -1,4 +1,5 @@
 import { getApiKey, setApiKey, hasApiKey, getGhostText as claudeGhostText, getTemplateExample as claudeTemplateExample, getClarityCheck as claudeClarityCheck, getCoachingNudge as claudeCoachingNudge } from './anthropic';
+import { getOpenAIKey, setOpenAIKey, hasOpenAIKey, getGhostText as openaiGhostText, getTemplateExample as openaiTemplateExample, getClarityCheck as openaiClarityCheck, getCoachingNudge as openaiCoachingNudge } from './openai';
 import { checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady, autoStartOllama, getGhostText as ollamaGhostText, getTemplateExample as ollamaTemplateExample, getClarityCheck as ollamaClarityCheck, getCoachingNudge as ollamaCoachingNudge } from './ollama';
 
 const PROVIDER_KEY = 'clarity-ai-provider';
@@ -7,9 +8,10 @@ const PROVIDER_KEY = 'clarity-ai-provider';
 
 export function getProvider() {
   const stored = localStorage.getItem(PROVIDER_KEY);
-  if (stored === 'ollama' || stored === 'claude' || stored === 'none') return stored;
+  if (stored === 'ollama' || stored === 'claude' || stored === 'openai' || stored === 'none') return stored;
   // Backward compat: if a Claude key exists but no provider set, default to claude
   if (hasApiKey()) return 'claude';
+  if (hasOpenAIKey()) return 'openai';
   return 'none';
 }
 
@@ -23,6 +25,7 @@ export function isAiEnabled() {
 
 // ── Re-exports ────────────────────────────────────────────────────
 export { getApiKey, setApiKey, hasApiKey } from './anthropic';
+export { getOpenAIKey, setOpenAIKey, hasOpenAIKey } from './openai';
 export { checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady, autoStartOllama } from './ollama';
 
 // ── Routed AI functions ───────────────────────────────────────────
@@ -30,6 +33,7 @@ export { checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp,
 export async function getGhostText(params) {
   const p = getProvider();
   if (p === 'claude') return claudeGhostText(params);
+  if (p === 'openai') return openaiGhostText(params);
   if (p === 'ollama') return ollamaGhostText(params);
   return null;
 }
@@ -37,6 +41,7 @@ export async function getGhostText(params) {
 export async function getTemplateExample(params) {
   const p = getProvider();
   if (p === 'claude') return claudeTemplateExample(params);
+  if (p === 'openai') return openaiTemplateExample(params);
   if (p === 'ollama') return ollamaTemplateExample(params);
   return null;
 }
@@ -44,6 +49,7 @@ export async function getTemplateExample(params) {
 export async function getClarityCheck(params) {
   const p = getProvider();
   if (p === 'claude') return claudeClarityCheck(params);
+  if (p === 'openai') return openaiClarityCheck(params);
   if (p === 'ollama') return ollamaClarityCheck(params);
   return null;
 }
@@ -51,6 +57,7 @@ export async function getClarityCheck(params) {
 export async function getCoachingNudge(params) {
   const p = getProvider();
   if (p === 'claude') return claudeCoachingNudge(params);
+  if (p === 'openai') return openaiCoachingNudge(params);
   if (p === 'ollama') return ollamaCoachingNudge(params);
   return null;
 }
