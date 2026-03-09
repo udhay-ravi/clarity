@@ -11,10 +11,12 @@ import { compressImageToDataUrl } from '../lib/imageUtils';
 import './TipTapBody.css';
 
 const TipTapBody = forwardRef(function TipTapBody(
-  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown },
+  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand },
   ref
 ) {
   const suppressUpdateRef = useRef(false);
+  const searchCbRef = useRef(onSearchCommand);
+  searchCbRef.current = onSearchCommand;
 
   const editor = useEditor({
     extensions: [
@@ -55,7 +57,23 @@ const TipTapBody = forwardRef(function TipTapBody(
           'line-height: var(--editor-line-height, 1.75)',
         ].join(';'),
       },
-      handleKeyDown: (_view, event) => {
+      handleKeyDown: (view, event) => {
+        // Detect @search command on Enter
+        if (event.key === 'Enter' && !event.shiftKey) {
+          const { state } = view;
+          const { $from } = state.selection;
+          // Get current line text
+          const lineStart = $from.start();
+          const lineText = state.doc.textBetween(lineStart, $from.pos, '');
+          const searchMatch = lineText.match(/^@search\s+(.+)/i);
+          if (searchMatch) {
+            event.preventDefault();
+            const query = searchMatch[1].trim();
+            // Get the position range of the @search line to replace later
+            searchCbRef.current?.({ query, from: lineStart, to: $from.pos });
+            return true;
+          }
+        }
         // Let parent handle Tab/Escape for ghost text
         if (event.key === 'Tab' || event.key === 'Escape') {
           onKeyDown?.(event);
@@ -86,6 +104,18 @@ const TipTapBody = forwardRef(function TipTapBody(
 
   // Expose editor instance to parent
   useImperativeHandle(ref, () => editor, [editor]);
+
+  // Selection update listener — uses ref to avoid stale closures
+  const selectionCbRef = useRef(onSelectionUpdate);
+  selectionCbRef.current = onSelectionUpdate;
+  useEffect(() => {
+    if (!editor) return;
+    const handler = () => {
+      selectionCbRef.current?.({ isInTable: editor.isActive('table') });
+    };
+    editor.on('selectionUpdate', handler);
+    return () => editor.off('selectionUpdate', handler);
+  }, [editor]);
 
   // Sync content when section changes (e.g., switching sections)
   const prevContentRef = useRef(content);

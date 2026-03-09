@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { ChevronUp, ChevronDown, Trash2, Plus, Loader2, X, Sparkles } from 'lucide-react';
+import { ChevronUp, ChevronDown, Trash2, Plus, Loader2, X, Sparkles, Search } from 'lucide-react';
 import { useGhostText } from '../hooks/useGhostText';
 import { getGhostPrompt, getDimensionCoverage, getSectionDimensionCount } from '../lib/ghostPrompts';
-import { getClarityCheck, getProvider } from '../lib/ai-provider';
+import { getClarityCheck, getSearchInsight, getProvider, isAiEnabled } from '../lib/ai-provider';
 import TipTapBody from './TipTapBody';
 import InsertToolbar from './InsertToolbar';
 import ChartModal from './ChartModal';
+import TableToolbar from './TableToolbar';
 
 export default function SectionBlock({
   section,
@@ -32,6 +33,9 @@ export default function SectionBlock({
   const [clarityLoading, setClarityLoading] = useState(false);
   const [clarityError, setClarityError] = useState(false);
   const [showChartModal, setShowChartModal] = useState(false);
+  const [isInTable, setIsInTable] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchAbortRef = useRef(null);
   const editorRef = useRef(null);
   const titleRef = useRef(null);
   const clarityAbortRef = useRef(null);
@@ -165,6 +169,10 @@ export default function SectionBlock({
     onUpdate({ ...section, title: text });
   }, [section, onUpdate]);
 
+  const handleSelectionUpdate = useCallback(({ isInTable: inTable }) => {
+    setIsInTable(inTable);
+  }, []);
+
   const handleBodyFocus = useCallback(() => {
     setIsFocused(true);
     onFocus?.(section.id);
@@ -183,6 +191,94 @@ export default function SectionBlock({
     },
     []
   );
+
+  // @search command handler
+  const handleSearchCommand = useCallback(
+    async ({ query, from, to }) => {
+      const editor = editorRef.current;
+      if (!editor) return;
+
+      if (!isAiEnabled()) {
+        // Replace @search with a hint when AI is not configured
+        editor.chain().focus().setTextSelection({ from, to }).deleteSelection()
+          .insertContent('[Enable an AI provider in Settings to use @search]').run();
+        return;
+      }
+
+      if (searchLoading) return;
+
+      // Cancel any in-flight search
+      if (searchAbortRef.current) searchAbortRef.current.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+
+      // Replace @search line with loading indicator text
+      editor.chain().focus().setTextSelection({ from, to }).deleteSelection().insertContent('Searching...').run();
+      setSearchLoading(true);
+
+      try {
+        const result = await getSearchInsight({
+          query,
+          sectionTitle: section.title,
+          documentContext: prefaceSummary || section.body,
+          signal: controller.signal,
+        });
+
+        if (result && !controller.signal.aborted) {
+          // Find "Searching..." text and replace with result
+          const doc = editor.state.doc;
+          let searchingFrom = null;
+          let searchingTo = null;
+          doc.descendants((node, pos) => {
+            if (searchingFrom !== null) return false;
+            if (node.isText && node.text.includes('Searching...')) {
+              const idx = node.text.indexOf('Searching...');
+              searchingFrom = pos + idx;
+              searchingTo = pos + idx + 'Searching...'.length;
+              return false;
+            }
+          });
+          if (searchingFrom !== null) {
+            editor.chain().focus().setTextSelection({ from: searchingFrom, to: searchingTo }).deleteSelection().insertContent(result).run();
+          }
+          // Update section
+          const newText = editor.getText();
+          onUpdate({ ...section, body: newText, content: editor.getJSON() });
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          // Replace "Searching..." with error message
+          const doc = editor.state.doc;
+          let searchingFrom = null;
+          let searchingTo = null;
+          doc.descendants((node, pos) => {
+            if (searchingFrom !== null) return false;
+            if (node.isText && node.text.includes('Searching...')) {
+              const idx = node.text.indexOf('Searching...');
+              searchingFrom = pos + idx;
+              searchingTo = pos + idx + 'Searching...'.length;
+              return false;
+            }
+          });
+          if (searchingFrom !== null) {
+            editor.chain().focus().setTextSelection({ from: searchingFrom, to: searchingTo }).deleteSelection().insertContent(`[Search failed: ${query}]`).run();
+          }
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setSearchLoading(false);
+        }
+      }
+    },
+    [searchLoading, section, prefaceSummary, onUpdate]
+  );
+
+  // Cleanup search abort on unmount
+  useEffect(() => {
+    return () => {
+      if (searchAbortRef.current) searchAbortRef.current.abort();
+    };
+  }, []);
 
   // Clarity Check handlers
   const handleClarityCheck = useCallback(async () => {
@@ -318,6 +414,9 @@ export default function SectionBlock({
         {/* Insert toolbar (Image / Table / Chart) */}
         <InsertToolbar editor={editorRef.current} onOpenChart={() => setShowChartModal(true)} />
 
+        {/* Table editing toolbar — shown when cursor is inside a table */}
+        {isInTable && <TableToolbar editor={editorRef.current} />}
+
         {/* Section body with ghost text */}
         <div className="relative">
           <TipTapBody
@@ -328,7 +427,19 @@ export default function SectionBlock({
             onFocus={handleBodyFocus}
             onBlur={handleBodyBlur}
             onKeyDown={handleBodyKeyDown}
+            onSelectionUpdate={handleSelectionUpdate}
+            onSearchCommand={handleSearchCommand}
           />
+
+          {/* @search loading indicator */}
+          {searchLoading && (
+            <div className="flex items-center gap-2 mt-2 animate-ghost-in">
+              <Search size={14} className="text-amber animate-pulse" />
+              <span className="text-sm font-[var(--font-ui)] text-ghost/70">
+                Searching for insights...
+              </span>
+            </div>
+          )}
 
           {/* Ghost coaching — Q (thinking prompt) and R (recommended sentence) */}
           {activeGhost && (
