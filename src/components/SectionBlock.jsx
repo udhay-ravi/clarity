@@ -3,6 +3,7 @@ import { ChevronUp, ChevronDown, Trash2, Plus, Loader2, X, Sparkles, Search } fr
 import { useGhostText } from '../hooks/useGhostText';
 import { getGhostPrompt, getDimensionCoverage, getSectionDimensionCount } from '../lib/ghostPrompts';
 import { getClarityCheck, getSearchInsight, getGenText, getProvider, isAiEnabled } from '../lib/ai-provider';
+import { migrateSectionToFaq } from '../lib/templates';
 import TipTapBody from './TipTapBody';
 import FaqQuestionBox from './FaqQuestionBox';
 import InsertToolbar from './InsertToolbar';
@@ -44,6 +45,16 @@ export default function SectionBlock({
   const clarityAbortRef = useRef(null);
   const hasContent = section.body && section.body.trim().length > 0;
   const isFaq = section.type === 'faq' && Array.isArray(section.questions);
+
+  // Auto-migrate old FAQ sections to new question-box format on mount
+  useEffect(() => {
+    if (isFaq) return; // already in new format
+    const migrated = migrateSectionToFaq(section);
+    if (migrated) {
+      onUpdate(migrated);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only
 
   // FAQ question update handler
   const handleQuestionUpdate = useCallback(

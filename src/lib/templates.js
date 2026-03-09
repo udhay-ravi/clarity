@@ -310,3 +310,57 @@ export function createDocumentFromTemplate(template, prefaceValues = {}) {
     })),
   };
 }
+
+// ── FAQ migration helper ──────────────────────────────────────────
+// Used to auto-upgrade old PRFAQ docs that have plain-text FAQ sections
+// into the new question-box format.
+
+const FAQ_QUESTIONS_MAP = {
+  'Internal FAQ': {
+    placeholder: 'Answer the hard questions leadership will ask.',
+    questions: [
+      'Why now? What changed in the market or our data?',
+      'What\'s the total addressable opportunity?',
+      'What are the key technical and execution risks?',
+      'What does this cost to build and maintain?',
+      'How does this fit our 3-year product strategy?',
+      'What are we choosing NOT to do in order to do this?',
+    ],
+  },
+  'External FAQ': {
+    placeholder: 'Answer the questions customers will ask.',
+    questions: [
+      'How is this different from what you already offer?',
+      'Does this require any changes to my current setup?',
+      'What data do you need access to?',
+      'How accurate are the forecasts?',
+      'What does it cost / is it included in my plan?',
+      'Can I try it before committing?',
+    ],
+  },
+};
+
+/**
+ * Migrate a section to FAQ format if it matches a known FAQ title
+ * and hasn't been migrated yet. Returns null if no migration needed.
+ */
+export function migrateSectionToFaq(section) {
+  if (section.type === 'faq') return null; // already migrated
+  const faqDef = FAQ_QUESTIONS_MAP[section.title];
+  if (!faqDef) return null; // not an FAQ section
+
+  // Only migrate if body is empty (user hasn't written content yet)
+  if (section.body && section.body.trim().length > 0) return null;
+
+  return {
+    ...section,
+    type: 'faq',
+    placeholder: faqDef.placeholder,
+    questions: faqDef.questions.map((q) => ({
+      id: crypto.randomUUID(),
+      question: q,
+      answer: '',
+      content: null,
+    })),
+  };
+}
