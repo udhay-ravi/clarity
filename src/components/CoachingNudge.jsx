@@ -11,7 +11,7 @@ export default function CoachingNudge({ nudges, onDismiss }) {
       {nudges.map((nudge) => (
         <div
           key={nudge.id}
-          className="p-3 bg-white rounded-lg shadow-sm border border-border animate-nudge-in"
+          className="p-3 bg-surface rounded-lg shadow-sm border border-border animate-nudge-in"
         >
           <div className="flex items-start gap-2">
             <Lightbulb size={16} className="text-amber mt-0.5 shrink-0" />

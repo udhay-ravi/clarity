@@ -4,7 +4,7 @@ import WelcomeScreen from './components/WelcomeScreen';
 import PrefaceScreen from './components/PrefaceScreen';
 import DocumentEditor from './components/DocumentEditor';
 import DocumentLibrary from './components/DocumentLibrary';
-import SettingsModal, { applyEditorPrefs } from './components/SettingsModal';
+import SettingsModal, { applyEditorPrefs, getEditorPrefs } from './components/SettingsModal';
 import LoginScreen from './components/LoginScreen';
 import { useAuth } from './hooks/useAuth';
 import { useCoaching } from './hooks/useCoaching';
@@ -104,6 +104,15 @@ export default function App() {
     if (getProvider() === 'ollama' && typeof window !== 'undefined' && window.isElectron) {
       autoStartOllama().catch((err) => console.warn('Ollama auto-start failed:', err.message));
     }
+
+    // Listen for system theme changes when in 'system' mode
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = () => {
+      const p = getEditorPrefs();
+      if (p.theme === 'system') applyEditorPrefs(p);
+    };
+    mql.addEventListener('change', handleThemeChange);
+    return () => mql.removeEventListener('change', handleThemeChange);
   }, []);
 
   // ---------------------------------------------------------------------------

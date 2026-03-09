@@ -55,7 +55,7 @@ export default function StructureGuide({ focusedSection, preface, documentType }
       </div>
 
       {/* Template structure card */}
-      <div className="p-3 bg-white rounded-lg border border-border mb-3">
+      <div className="p-3 bg-surface rounded-lg border border-border mb-3">
         <div className="text-[10px] font-semibold font-[var(--font-ui)] text-ghost uppercase tracking-wider mb-2">
           Template
         </div>

@@ -93,7 +93,7 @@ export default function DocumentLibrary({ docs, onOpenDoc, onNewDoc, onDeleteDoc
         {sorted.map((doc) => (
           <div
             key={doc.id}
-            className="group flex items-center gap-4 p-4 bg-white rounded-lg border border-border hover:border-amber/40 hover:shadow-sm transition-all cursor-pointer"
+            className="group flex items-center gap-4 p-4 bg-surface rounded-lg border border-border hover:border-amber/40 hover:shadow-sm transition-all cursor-pointer"
             onClick={() => onOpenDoc(doc.id)}
           >
             {/* Icon */}

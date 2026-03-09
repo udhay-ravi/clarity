@@ -61,7 +61,7 @@ export default function LoginScreen({ onSignInWithGoogle, onSignUpWithEmail, onS
         {/* Google Sign-in */}
         <button
           onClick={onSignInWithGoogle}
-          className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-white border border-border rounded-xl shadow-sm hover:shadow-md hover:border-amber/40 transition-all cursor-pointer"
+          className="flex items-center justify-center gap-3 w-full px-6 py-3 bg-surface border border-border rounded-xl shadow-sm hover:shadow-md hover:border-amber/40 transition-all cursor-pointer"
         >
           <svg width="20" height="20" viewBox="0 0 48 48">
             <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
@@ -91,7 +91,7 @@ export default function LoginScreen({ onSignInWithGoogle, onSignUpWithEmail, onS
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="w-full text-sm font-[var(--font-ui)] text-text bg-white border border-border rounded-xl pl-10 pr-4 py-3 outline-none focus:border-amber transition-colors"
+                className="w-full text-sm font-[var(--font-ui)] text-text bg-surface border border-border rounded-xl pl-10 pr-4 py-3 outline-none focus:border-amber transition-colors"
               />
             </div>
           )}
@@ -104,7 +104,7 @@ export default function LoginScreen({ onSignInWithGoogle, onSignUpWithEmail, onS
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email address"
               required
-              className="w-full text-sm font-[var(--font-ui)] text-text bg-white border border-border rounded-xl pl-10 pr-4 py-3 outline-none focus:border-amber transition-colors"
+              className="w-full text-sm font-[var(--font-ui)] text-text bg-surface border border-border rounded-xl pl-10 pr-4 py-3 outline-none focus:border-amber transition-colors"
             />
           </div>
 
@@ -117,7 +117,7 @@ export default function LoginScreen({ onSignInWithGoogle, onSignUpWithEmail, onS
               placeholder="Password"
               required
               minLength={6}
-              className="w-full text-sm font-[var(--font-ui)] text-text bg-white border border-border rounded-xl pl-10 pr-4 py-3 outline-none focus:border-amber transition-colors"
+              className="w-full text-sm font-[var(--font-ui)] text-text bg-surface border border-border rounded-xl pl-10 pr-4 py-3 outline-none focus:border-amber transition-colors"
             />
           </div>
 

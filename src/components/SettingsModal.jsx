@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Github, Type, ALargeSmall } from 'lucide-react';
+import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Github, Type, ALargeSmall, Sun, Moon, Monitor } from 'lucide-react';
 import { getProvider, setProvider, getApiKey, setApiKey, hasApiKey, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady } from '../lib/ai-provider';
 
 // ── Persisted editor preferences ──────────────────────────────────
@@ -16,7 +16,7 @@ function savePrefs(prefs) {
 }
 
 export function getEditorPrefs() {
-  const defaults = { fontFamily: 'serif', fontSize: 'base', lineHeight: 'relaxed' };
+  const defaults = { fontFamily: 'serif', fontSize: 'base', lineHeight: 'relaxed', theme: 'light' };
   return { ...defaults, ...loadPrefs() };
 }
 
@@ -253,7 +253,7 @@ export default function SettingsModal({ onClose }) {
                   {provider === 'claude' && (
                     <div className="mt-3">
                       <div className="relative">
-                        <input ref={apiKeyRef} type={showKey ? 'text' : 'password'} value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)} placeholder="sk-ant-api03-..." className="w-full text-xs font-[var(--font-ui)] text-text bg-white border border-border rounded-md px-3 py-1.5 pr-8 outline-none focus:border-amber transition-colors" />
+                        <input ref={apiKeyRef} type={showKey ? 'text' : 'password'} value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)} placeholder="sk-ant-api03-..." className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-1.5 pr-8 outline-none focus:border-amber transition-colors" />
                         <button onClick={() => setShowKey(!showKey)} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-ghost hover:text-text transition-colors cursor-pointer">
                           {showKey ? <EyeOff size={12} /> : <Eye size={12} />}
                         </button>
@@ -310,6 +310,36 @@ export default function SettingsModal({ onClose }) {
           {/* ═══════ Editor Tab ═══════ */}
           {tab === 'editor' && (
             <div className="space-y-5">
+              {/* Theme */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Moon size={14} className="text-amber" />
+                  <span className="text-xs font-semibold font-[var(--font-ui)] text-text uppercase tracking-wider">Theme</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'light', label: 'Light', icon: Sun },
+                    { id: 'dark', label: 'Dark', icon: Moon },
+                    { id: 'system', label: 'System', icon: Monitor },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        const next = { ...prefs, theme: t.id };
+                        setPrefs(next);
+                        applyEditorPrefs(next);
+                      }}
+                      className={`flex items-center justify-center gap-2 p-2.5 rounded-lg border-2 text-center transition-all cursor-pointer ${
+                        prefs.theme === t.id ? 'border-amber bg-amber-light/20' : 'border-border hover:border-amber/40'
+                      }`}
+                    >
+                      <t.icon size={14} className={prefs.theme === t.id ? 'text-amber' : 'text-ghost'} />
+                      <span className="text-[10px] font-[var(--font-ui)] text-ghost">{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Font Family */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -468,6 +498,15 @@ export function applyEditorPrefs(prefs) {
   root.style.setProperty('--editor-font', fontMap[prefs.fontFamily] || fontMap.serif);
   root.style.setProperty('--editor-size', sizeMap[prefs.fontSize] || sizeMap.base);
   root.style.setProperty('--editor-line-height', lineMap[prefs.lineHeight] || lineMap.relaxed);
+
+  // Theme
+  const theme = prefs.theme || 'light';
+  let dark = theme === 'dark';
+  if (theme === 'system') {
+    dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  root.classList.toggle('dark', dark);
+  root.style.colorScheme = dark ? 'dark' : 'light';
 }
 
 // ── Sub-components ────────────────────────────────────────────────
@@ -475,7 +514,7 @@ export function applyEditorPrefs(prefs) {
 function ModelSelector({ models, selectedModel, onSelectModel }) {
   return (
     <div className="relative">
-      <select value={selectedModel} onChange={(e) => onSelectModel(e.target.value)} className="w-full text-xs font-[var(--font-ui)] text-text bg-white border border-border rounded-md px-3 py-1.5 pr-7 outline-none focus:border-amber transition-colors appearance-none cursor-pointer">
+      <select value={selectedModel} onChange={(e) => onSelectModel(e.target.value)} className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-1.5 pr-7 outline-none focus:border-amber transition-colors appearance-none cursor-pointer">
         {models.map((m) => (
           <option key={m.name} value={m.name}>{m.name} {m.size ? `(${m.size})` : ''}</option>
         ))}

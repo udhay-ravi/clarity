@@ -44,7 +44,7 @@ export default function ExportMenu({
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-white rounded-md transition-colors cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-surface rounded-md transition-colors cursor-pointer"
         title="Export document"
       >
         <FileDown size={16} />
@@ -53,7 +53,7 @@ export default function ExportMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-lg border border-border shadow-lg py-1 z-50 animate-nudge-in">
+        <div className="absolute right-0 top-full mt-1 w-52 bg-surface rounded-lg border border-border shadow-lg py-1 z-50 animate-nudge-in">
           {items.map((item, i) =>
             item.type === 'separator' ? (
               <hr key={i} className="my-1 border-border" />

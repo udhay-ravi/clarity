@@ -27,6 +27,7 @@
 
 @theme {
   --color-bg: #FAFAF8;
+  --color-surface: #FFFFFF;
   --color-text: #1A1A1A;
   --color-amber: #D97706;
   --color-amber-light: #FEF3C7;
@@ -35,6 +36,18 @@
   --color-sidebar-bg: #F5F5F3;
   --font-body: 'Lora', serif;
   --font-ui: 'DM Sans', sans-serif;
+}
+
+/* ── Dark Mode ── */
+.dark {
+  --color-bg: #141414;
+  --color-surface: #1E1E1E;
+  --color-text: #E5E5E3;
+  --color-amber: #F59E0B;
+  --color-amber-light: #422006;
+  --color-ghost: #6B7280;
+  --color-border: #2E2E2E;
+  --color-sidebar-bg: #1A1A1A;
 }
 
 * {
@@ -72,11 +85,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4D4D4;
+  background: var(--color-border);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #B0B0B0;
+  background: var(--color-ghost);
 }
 
 @keyframes nudgeIn {

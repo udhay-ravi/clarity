@@ -8,7 +8,7 @@ export default function PrefaceEditor({ preface, onChange }) {
   if (fields.length === 0) return null;
 
   return (
-    <div className="mb-6 border border-border rounded-lg bg-white/50 animate-section-in">
+    <div className="mb-6 border border-border rounded-lg bg-surface/50 animate-section-in">
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="flex items-center gap-2 w-full px-4 py-3 text-left cursor-pointer hover:bg-amber-light/30 transition-colors rounded-t-lg"

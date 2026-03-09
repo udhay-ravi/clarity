@@ -82,7 +82,7 @@ export default function Toolbar({
           />
           <button
             onClick={onNewDoc}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-white rounded-md transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-surface rounded-md transition-colors cursor-pointer"
             title="New Document"
           >
             <FilePlus size={16} />
@@ -90,7 +90,7 @@ export default function Toolbar({
           </button>
           <button
             onClick={onGoToLibrary}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-white rounded-md transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-surface rounded-md transition-colors cursor-pointer"
             title="My Documents"
           >
             <Library size={16} />
@@ -98,7 +98,7 @@ export default function Toolbar({
           </button>
           <button
             onClick={onOpenSettings}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-white rounded-md transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-[var(--font-ui)] text-text/70 hover:text-text hover:bg-surface rounded-md transition-colors cursor-pointer"
             title="Settings"
           >
             <Settings size={16} />

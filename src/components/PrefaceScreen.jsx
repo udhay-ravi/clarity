@@ -71,7 +71,7 @@ export default function PrefaceScreen({ template, onComplete, onBack }) {
                 value={values[field.key]}
                 onChange={(e) => handleChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
-                className="w-full text-base font-[var(--font-body)] text-text bg-white border border-border rounded-lg px-4 py-3 outline-none focus:border-amber transition-colors placeholder:text-ghost/50"
+                className="w-full text-base font-[var(--font-body)] text-text bg-surface border border-border rounded-lg px-4 py-3 outline-none focus:border-amber transition-colors placeholder:text-ghost/50"
               />
             </div>
           ))}

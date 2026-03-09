@@ -153,7 +153,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
               {isElectron && (
                 <button
                   onClick={handleChooseOllama}
-                  className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
+                  className="flex flex-col items-center gap-3 p-6 bg-surface rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
                 >
                   <Cpu size={28} className="text-ghost group-hover:text-amber transition-colors" />
                   <span className="text-sm font-semibold font-[var(--font-ui)] text-text">
@@ -168,7 +168,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
               {/* Claude card */}
               <button
                 onClick={handleChooseClaude}
-                className="flex flex-col items-center gap-3 p-6 bg-white rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
+                className="flex flex-col items-center gap-3 p-6 bg-surface rounded-xl border-2 border-border hover:border-amber hover:shadow-md transition-all cursor-pointer group"
               >
                 <Sparkles size={28} className="text-ghost group-hover:text-amber transition-colors" />
                 <span className="text-sm font-semibold font-[var(--font-ui)] text-text">
@@ -231,7 +231,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
                       <select
                         value={selectedModel}
                         onChange={(e) => setSelectedModel(e.target.value)}
-                        className="w-full text-sm font-[var(--font-ui)] text-text bg-white border border-border rounded-lg px-4 py-2.5 pr-8 outline-none focus:border-amber transition-colors appearance-none cursor-pointer"
+                        className="w-full text-sm font-[var(--font-ui)] text-text bg-surface border border-border rounded-lg px-4 py-2.5 pr-8 outline-none focus:border-amber transition-colors appearance-none cursor-pointer"
                       >
                         {ollamaModels.map((m) => (
                           <option key={m.name} value={m.name}>
@@ -251,7 +251,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
                 ) : (
                   <div className="text-sm font-[var(--font-ui)] text-ghost">
                     <p className="mb-2">No models found. Pull one first:</p>
-                    <code className="block bg-white border border-border rounded-lg px-3 py-2 text-xs font-mono text-text mb-3">
+                    <code className="block bg-surface border border-border rounded-lg px-3 py-2 text-xs font-mono text-text mb-3">
                       ollama pull llama3.2:3b
                     </code>
                     <button
@@ -272,7 +272,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
                   Ollama is not running
                 </div>
 
-                <div className="bg-white border border-border rounded-lg p-4 text-sm font-[var(--font-ui)] text-text space-y-2">
+                <div className="bg-surface border border-border rounded-lg p-4 text-sm font-[var(--font-ui)] text-text space-y-2">
                   <p className="font-medium">Quick setup:</p>
                   <ol className="list-decimal list-inside space-y-1 text-ghost text-xs leading-relaxed">
                     <li>
@@ -327,7 +327,7 @@ export default function WelcomeScreen({ onStart, onOpenSettings, onGoToLanding }
                 onChange={(e) => setApiKeyInput(e.target.value)}
                 onKeyDown={handleKeyInputKeyDown}
                 placeholder="sk-ant-api03-..."
-                className="w-full text-base font-[var(--font-ui)] text-text bg-white border border-border rounded-lg px-4 py-3 pr-20 outline-none focus:border-amber transition-colors"
+                className="w-full text-base font-[var(--font-ui)] text-text bg-surface border border-border rounded-lg px-4 py-3 pr-20 outline-none focus:border-amber transition-colors"
               />
               <button
                 onClick={() => setShowKey(!showKey)}

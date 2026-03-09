@@ -169,7 +169,7 @@ export default function LandingPage({ onGetStarted }) {
 
       {/* ── Bottom CTA ── */}
       <section className="px-8 pt-12 pb-24 max-w-3xl mx-auto text-center">
-        <div className="bg-white border border-border rounded-2xl px-10 py-14 shadow-sm">
+        <div className="bg-surface border border-border rounded-2xl px-10 py-14 shadow-sm">
           <div className="w-12 h-12 rounded-xl bg-amber/10 flex items-center justify-center mx-auto mb-5">
             <PenLine size={24} className="text-amber" />
           </div>
@@ -235,7 +235,7 @@ const DEMO_SCREENS = [
       <div className="p-5 space-y-3">
         <div className="text-center mb-4">
           <div className="text-sm font-semibold text-text/80 mb-1">What are you writing?</div>
-          <div className="w-64 mx-auto h-9 rounded-lg border border-amber/40 bg-white flex items-center px-3">
+          <div className="w-64 mx-auto h-9 rounded-lg border border-amber/40 bg-surface flex items-center px-3">
             <span className="text-xs text-text/70">PRD for checkout redesign</span>
             <span className="ml-auto text-[10px] text-amber font-medium">PRD detected</span>
           </div>
@@ -247,7 +247,7 @@ const DEMO_SCREENS = [
               className={`text-[10px] font-medium text-center py-2 rounded-lg border transition-all ${
                 t === 'PRD'
                   ? 'bg-amber/10 border-amber text-amber'
-                  : 'bg-white border-border text-ghost'
+                  : 'bg-surface border-border text-ghost'
               }`}
             >
               {t}
@@ -330,7 +330,7 @@ const DEMO_SCREENS = [
     label: 'Export anywhere',
     content: (
       <div className="p-5 flex flex-col items-center justify-center h-full">
-        <div className="w-48 bg-white border border-border rounded-lg p-3 mb-4 shadow-sm">
+        <div className="w-48 bg-surface border border-border rounded-lg p-3 mb-4 shadow-sm">
           <div className="text-[10px] font-semibold text-text/70 mb-2">Checkout Redesign PRD</div>
           <div className="space-y-1.5">
             <div className="h-[3px] bg-text/15 rounded w-full" />
@@ -346,7 +346,7 @@ const DEMO_SCREENS = [
             { ext: '.pdf', color: 'bg-red-500' },
             { ext: '.docx', color: 'bg-blue-500' },
           ].map((f) => (
-            <div key={f.ext} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-white">
+            <div key={f.ext} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-surface">
               <div className={`w-4 h-5 rounded-sm ${f.color} flex items-center justify-center`}>
                 <span className="text-[6px] font-bold text-white">{f.ext}</span>
               </div>
@@ -381,7 +381,7 @@ function ProductDemo() {
       onMouseLeave={() => setPaused(false)}
     >
       {/* Browser chrome */}
-      <div className="bg-white rounded-2xl border border-border shadow-xl overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-border shadow-xl overflow-hidden">
         {/* Title bar */}
         <div className="flex items-center gap-2 px-4 py-2.5 bg-sidebar-bg border-b border-border">
           <div className="flex gap-1.5">
@@ -459,7 +459,7 @@ function ValueCard({ icon, title, description }) {
 
 function FeatureCard({ icon, title, description }) {
   return (
-    <div className="p-5 bg-white rounded-xl border border-border hover:border-amber/30 hover:shadow-sm transition-all group">
+    <div className="p-5 bg-surface rounded-xl border border-border hover:border-amber/30 hover:shadow-sm transition-all group">
       <div className="flex items-center gap-2.5 mb-2.5">
         <div className="w-8 h-8 rounded-lg bg-amber/10 flex items-center justify-center text-amber group-hover:bg-amber group-hover:text-white transition-colors">
           {icon}
