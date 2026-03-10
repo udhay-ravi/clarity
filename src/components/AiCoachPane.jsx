@@ -145,6 +145,14 @@ export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorI
             </div>
           )}
 
+          {/* Loading indicator */}
+          {loading && !coaching && (
+            <div className="flex items-center gap-2 py-2">
+              <span className="w-3 h-3 border-2 border-amber border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-ghost">AI thinking...</span>
+            </div>
+          )}
+
           {/* R: / Q: coaching */}
           {coaching && (
             <div className="bg-amber/5 rounded-lg p-3 border border-amber/20 animate-nudge-in">

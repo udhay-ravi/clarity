@@ -6,7 +6,7 @@ import {
   getSectionCompleteness,
   getSectionDimensionCount,
 } from '../lib/ghostPrompts';
-import { getGhostText } from '../lib/ai-provider';
+import { getGhostText, isAiEnabled } from '../lib/ai-provider';
 
 /**
  * AI Coach hook — detects headings, tracks dimensions, provides sentence-level coaching.
@@ -92,12 +92,58 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
     };
   }, [cursorInfo?.lineText, currentSection]);
 
-  const triggerCoaching = useCallback(() => {
+  const triggerCoaching = useCallback(async () => {
     if (!currentSection || !doc?.body) return;
 
     const sectionText = extractSectionText(doc.body, currentSection.title);
-    const prompt = getGhostPrompt(currentSection.title, sectionText, '');
+    const coverage = getDimensionCoverage(currentSection.title, sectionText);
 
+    // If AI is enabled, call the real API
+    if (isAiEnabled()) {
+      // Abort any pending AI request
+      if (abortRef.current) abortRef.current.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setLoading(true);
+      try {
+        const aiResult = await getGhostText({
+          sectionTitle: currentSection.title,
+          documentType: doc.type || 'General',
+          prefaceContext: doc.title || '',
+          userText: sectionText,
+          coveredDimensions: coverage.covered || [],
+          missingDimensions: coverage.missing || [],
+          signal: controller.signal,
+        });
+
+        if (controller.signal.aborted) return;
+
+        if (aiResult) {
+          // Parse Q: and R: lines from AI response
+          const lines = aiResult.split('\n').filter((l) => l.trim());
+          let question = '';
+          let recommendation = '';
+          for (const line of lines) {
+            if (line.startsWith('Q:')) question = line.slice(2).trim();
+            if (line.startsWith('R:')) recommendation = line.slice(2).trim();
+          }
+          if (question || recommendation) {
+            setCoaching({ question, recommendation });
+            setGhostRec(recommendation);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        console.warn('AI coaching failed, falling back to rule-based:', err.message);
+      }
+      setLoading(false);
+    }
+
+    // Fallback: rule-based coaching
+    const prompt = getGhostPrompt(currentSection.title, sectionText, '');
     if (prompt) {
       setCoaching({ question: prompt.question, recommendation: prompt.recommendation });
       setGhostRec(prompt.recommendation);
@@ -105,12 +151,14 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       setCoaching(null);
       setGhostRec(null);
     }
-  }, [currentSection, doc?.body]);
+  }, [currentSection, doc?.body, doc?.type, doc?.title]);
 
   // ── Clear coaching when section changes ──
   useEffect(() => {
     setCoaching(null);
     setGhostRec(null);
+    setLoading(false);
+    if (abortRef.current) abortRef.current.abort();
   }, [currentSection?.title]);
 
   // ── Accept ghost recommendation ──
