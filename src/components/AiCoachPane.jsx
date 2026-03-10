@@ -25,6 +25,8 @@ export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorI
     dimensions,
     coaching,
     ghostRec,
+    templateExample,
+    exampleLoading,
     loading,
     acceptGhost,
     dismissGhost,
@@ -142,6 +144,22 @@ export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorI
                   {dimensions.covered.length} of {dimensions.total}
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Template example / narrative guide */}
+          {exampleLoading && !templateExample && (
+            <div className="flex items-center gap-2 py-2">
+              <span className="w-3 h-3 border-2 border-amber/50 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs text-ghost">Generating example...</span>
+            </div>
+          )}
+          {templateExample && (
+            <div className="bg-surface rounded-lg p-3 border border-border">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ghost mb-2">
+                &#128214; Example
+              </p>
+              <p className="text-xs text-text/70 leading-relaxed whitespace-pre-line">{templateExample}</p>
             </div>
           )}
 

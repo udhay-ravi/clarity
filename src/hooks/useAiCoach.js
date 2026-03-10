@@ -6,7 +6,7 @@ import {
   getSectionCompleteness,
   getSectionDimensionCount,
 } from '../lib/ghostPrompts';
-import { getGhostText, isAiEnabled } from '../lib/ai-provider';
+import { getGhostText, getTemplateExample, isAiEnabled } from '../lib/ai-provider';
 
 /**
  * AI Coach hook — detects headings, tracks dimensions, provides sentence-level coaching.
@@ -17,6 +17,8 @@ import { getGhostText, isAiEnabled } from '../lib/ai-provider';
  * - dimensions: { covered: [], missing: [], total: number }
  * - coaching: { question, recommendation } or null
  * - ghostRec: string — recommendation text for Tab-to-accept
+ * - templateExample: string | null — AI-generated example narrative for current section
+ * - exampleLoading: boolean
  * - loading: boolean
  * - acceptGhost: () => string — returns the ghost text and clears it
  * - dismissGhost: () => void
@@ -25,8 +27,12 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
   const [coaching, setCoaching] = useState(null);
   const [ghostRec, setGhostRec] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [templateExample, setTemplateExample] = useState(null);
+  const [exampleLoading, setExampleLoading] = useState(false);
   const debounceTimer = useRef(null);
   const abortRef = useRef(null);
+  const exampleAbortRef = useRef(null);
+  const exampleCacheRef = useRef({}); // cache by sectionTitle
 
   // ── Section outline — derive from template sections ──
   const sectionOutline = useMemo(() => {
@@ -170,6 +176,63 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
     }
   }, [currentSection?.title]);
 
+  // ── Fetch template example when section changes ──
+  useEffect(() => {
+    if (!currentSection || !templateInfo?.sections) {
+      setTemplateExample(null);
+      return;
+    }
+
+    const section = templateInfo.sections[currentSection.index];
+    if (!section) return;
+
+    // Check cache first
+    const cacheKey = `${doc?.type}::${currentSection.title}`;
+    if (exampleCacheRef.current[cacheKey]) {
+      setTemplateExample(exampleCacheRef.current[cacheKey]);
+      return;
+    }
+
+    // If AI is not enabled, use the placeholder text as a fallback guide
+    if (!isAiEnabled()) {
+      setTemplateExample(section.placeholder || null);
+      return;
+    }
+
+    // Fetch AI-generated example
+    if (exampleAbortRef.current) exampleAbortRef.current.abort();
+    const controller = new AbortController();
+    exampleAbortRef.current = controller;
+    setExampleLoading(true);
+
+    getTemplateExample({
+      sectionTitle: currentSection.title,
+      templateStructure: section.placeholder || currentSection.title,
+      prefaceContext: doc?.title || 'A B2B SaaS product',
+      signal: controller.signal,
+    })
+      .then((result) => {
+        if (controller.signal.aborted) return;
+        if (result) {
+          exampleCacheRef.current[cacheKey] = result;
+          setTemplateExample(result);
+        } else {
+          // AI returned nothing — use placeholder as fallback
+          setTemplateExample(section.placeholder || null);
+        }
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        console.warn('Template example failed:', err.message);
+        setTemplateExample(section.placeholder || null);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setExampleLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [currentSection?.title, currentSection?.index, templateInfo, doc?.type, doc?.title]);
+
   // ── Accept ghost recommendation ──
   const acceptGhost = useCallback(() => {
     const text = ghostRec;
@@ -189,6 +252,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
     dimensions,
     coaching,
     ghostRec,
+    templateExample,
+    exampleLoading,
     loading,
     acceptGhost,
     dismissGhost,
