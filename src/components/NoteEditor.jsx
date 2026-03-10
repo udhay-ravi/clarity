@@ -42,6 +42,26 @@ const NoteEditor = forwardRef(function NoteEditor({ doc, onUpdate, onCursorChang
       }
     });
 
+    // Fallback: if no H2 heading found, check if any paragraph text before cursor
+    // matches a template section title (handles docs where headings are plain text)
+    if (!heading && templateInfo?.sections) {
+      const sectionTitles = templateInfo.sections
+        .filter((s) => s.title)
+        .map((s) => s.title.toLowerCase().trim());
+
+      state.doc.nodesBetween(0, pos, (node, nodePos) => {
+        if (node.type.name === 'paragraph' && node.textContent) {
+          const text = node.textContent.toLowerCase().trim();
+          const matchIdx = sectionTitles.findIndex(
+            (t) => text === t || (text.startsWith(t) && text.length <= t.length + 3)
+          );
+          if (matchIdx >= 0) {
+            heading = templateInfo.sections.filter((s) => s.title)[matchIdx].title;
+          }
+        }
+      });
+    }
+
     // Get current line text for sentence detection
     const lineStart = $from.start();
     const lineText = state.doc.textBetween(lineStart, $from.pos, '');
@@ -52,7 +72,7 @@ const NoteEditor = forwardRef(function NoteEditor({ doc, onUpdate, onCursorChang
       pos,
       isInTable,
     });
-  }, [onCursorChange]);
+  }, [onCursorChange, templateInfo]);
 
   // Handle @search and @gen commands
   const handleSearchCommand = useCallback(({ query, from, to }) => {

@@ -93,9 +93,9 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
   }, [cursorInfo?.lineText, currentSection]);
 
   const triggerCoaching = useCallback(async () => {
-    if (!currentSection || !doc?.body) return;
+    if (!currentSection) return;
 
-    const sectionText = extractSectionText(doc.body, currentSection.title);
+    const sectionText = doc?.body ? extractSectionText(doc.body, currentSection.title) : '';
     const coverage = getDimensionCoverage(currentSection.title, sectionText);
 
     // If AI is enabled, call the real API
@@ -153,12 +153,21 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
     }
   }, [currentSection, doc?.body, doc?.type, doc?.title]);
 
-  // ── Clear coaching when section changes ──
+  // ── Clear coaching when section changes — then proactively trigger ──
+  const triggerRef = useRef(triggerCoaching);
+  triggerRef.current = triggerCoaching;
+
   useEffect(() => {
     setCoaching(null);
     setGhostRec(null);
     setLoading(false);
     if (abortRef.current) abortRef.current.abort();
+
+    // Proactively trigger coaching when entering a new section
+    if (currentSection) {
+      const timer = setTimeout(() => triggerRef.current(), 400);
+      return () => clearTimeout(timer);
+    }
   }, [currentSection?.title]);
 
   // ── Accept ghost recommendation ──
@@ -193,17 +202,18 @@ function extractSectionText(fullBody, sectionTitle) {
   const lines = fullBody.split('\n');
   let capturing = false;
   const result = [];
+  const titleLower = sectionTitle.toLowerCase().trim();
 
   for (const line of lines) {
-    // Check if this line is a heading (approximation — match the section title)
     const trimmed = line.trim();
-    if (trimmed.toLowerCase() === sectionTitle.toLowerCase()) {
+    const trimmedLower = trimmed.toLowerCase();
+    // Match heading: exact, or heading starts with title (handles "Executive Summary:" matching "Executive Summary")
+    if (trimmedLower === titleLower || (trimmedLower.startsWith(titleLower) && trimmedLower.length <= titleLower.length + 3)) {
       capturing = true;
       continue;
     }
     // Stop at next heading-like line (short, no punctuation, title-case)
     if (capturing && trimmed.length > 0 && trimmed.length < 60 && !trimmed.includes('.') && /^[A-Z]/.test(trimmed)) {
-      // Heuristic: likely a new heading
       break;
     }
     if (capturing) {

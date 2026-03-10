@@ -211,7 +211,31 @@ export default function Workspace({ user, authEnabled, onSignOut, onGoToLanding 
   const handleTypeChange = useCallback((type) => {
     setActiveDoc((prev) => {
       if (!prev) return prev;
-      return { ...prev, type };
+      const updated = { ...prev, type };
+
+      // Scaffold H2 headings when selecting a template on an empty/blank doc
+      if (type && TEMPLATES[type]) {
+        const isBlank = !prev.body || prev.body.trim().length === 0;
+        if (isBlank) {
+          const nodes = [];
+          for (const section of TEMPLATES[type].sections) {
+            if (section.title) {
+              nodes.push({
+                type: 'heading',
+                attrs: { level: 2 },
+                content: [{ type: 'text', text: section.title }],
+              });
+              nodes.push({ type: 'paragraph' });
+            }
+          }
+          if (nodes.length > 0) {
+            updated.content = { type: 'doc', content: nodes };
+            updated.body = TEMPLATES[type].sections.map((s) => s.title).join('\n');
+          }
+        }
+      }
+
+      return updated;
     });
   }, []);
 
