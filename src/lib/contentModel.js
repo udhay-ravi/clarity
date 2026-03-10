@@ -78,3 +78,99 @@ export function migrateSections(sections) {
   if (!sections) return sections;
   return sections.map(migrateSection);
 }
+
+// ---------------------------------------------------------------------------
+// V2 migration: multi-section doc → single TipTap document
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert old sectioned document into a single TipTap JSON document.
+ * - Preface fields → bold label + value paragraphs at top
+ * - Section titles → H2 headings
+ * - Section body/content → paragraphs under headings
+ * - FAQ sections → bold Q + answer paragraphs
+ */
+export function sectionsToSingleDoc(sections, preface) {
+  const nodes = [];
+
+  // Preface fields at the top
+  if (preface) {
+    for (const field of Object.values(preface)) {
+      if (field.value?.trim()) {
+        nodes.push({
+          type: 'paragraph',
+          content: [
+            { type: 'text', marks: [{ type: 'bold' }], text: `${field.label}: ` },
+            { type: 'text', text: field.value },
+          ],
+        });
+      }
+    }
+    // Add blank line after preface if we had any
+    if (nodes.length > 0) {
+      nodes.push({ type: 'paragraph' });
+    }
+  }
+
+  for (const section of sections || []) {
+    // Section title → H2 heading
+    if (section.title) {
+      nodes.push({
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: section.title }],
+      });
+    }
+
+    // FAQ sections: render questions and answers
+    if (section.type === 'faq' && section.questions) {
+      for (const q of section.questions) {
+        // Bold question
+        nodes.push({
+          type: 'paragraph',
+          content: [{ type: 'text', marks: [{ type: 'bold' }], text: `Q: ${q.question}` }],
+        });
+        // Answer (from content or answer text)
+        const answerText = q.content ? tipTapDocToText(q.content) : (q.answer || '');
+        if (answerText.trim()) {
+          for (const line of answerText.split('\n')) {
+            nodes.push(
+              line.trim()
+                ? { type: 'paragraph', content: [{ type: 'text', text: line }] }
+                : { type: 'paragraph' }
+            );
+          }
+        } else {
+          nodes.push({ type: 'paragraph' });
+        }
+      }
+      continue;
+    }
+
+    // Rich content: extract nodes from TipTap JSON
+    if (section.content && section.content.content) {
+      for (const node of section.content.content) {
+        nodes.push(node);
+      }
+    } else if (section.body?.trim()) {
+      // Plain text fallback
+      for (const line of section.body.split('\n')) {
+        nodes.push(
+          line.trim()
+            ? { type: 'paragraph', content: [{ type: 'text', text: line }] }
+            : { type: 'paragraph' }
+        );
+      }
+    } else {
+      // Empty section — add blank paragraph
+      nodes.push({ type: 'paragraph' });
+    }
+  }
+
+  // Ensure at least one node
+  if (nodes.length === 0) {
+    nodes.push({ type: 'paragraph' });
+  }
+
+  return { type: 'doc', content: nodes };
+}

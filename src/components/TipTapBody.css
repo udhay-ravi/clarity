@@ -71,6 +71,25 @@
   z-index: 1;
 }
 
+/* Headings */
+.tiptap-body-editor h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
+
+.tiptap-body-editor h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
+
 /* Paragraphs — remove default margins from ProseMirror */
 .tiptap-body-editor p {
   margin: 0;
