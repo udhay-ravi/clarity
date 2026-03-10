@@ -101,7 +101,6 @@ export default function NotesSidebar({
             <div
               key={doc.id}
               onClick={() => onSelectNote(doc.id)}
-              role="button"
               tabIndex={0}
               className={`w-full text-left px-3 py-2.5 rounded-lg mb-0.5 transition-colors group cursor-pointer ${
                 isActive
@@ -122,8 +121,6 @@ export default function NotesSidebar({
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-[10px] text-ghost">{relativeTime(doc.updatedAt)}</span>
                 <span
-                  role="button"
-                  tabIndex={-1}
                   onClick={(e) => {
                     e.stopPropagation();
                     onDeleteNote(doc.id);
