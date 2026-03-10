@@ -104,7 +104,7 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
     const sectionText = doc?.body ? extractSectionText(doc.body, currentSection.title) : '';
     const coverage = getDimensionCoverage(currentSection.title, sectionText);
 
-    // If AI is enabled, call the real API
+    // If AI is enabled, try the real API first
     if (isAiEnabled()) {
       // Abort any pending AI request
       if (abortRef.current) abortRef.current.abort();
@@ -115,8 +115,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       try {
         const aiResult = await getGhostText({
           sectionTitle: currentSection.title,
-          documentType: doc.type || 'General',
-          prefaceContext: doc.title || '',
+          documentType: doc?.type || 'General',
+          prefaceContext: doc?.title || '',
           userText: sectionText,
           coveredDimensions: coverage.covered || [],
           missingDimensions: coverage.missing || [],
@@ -141,6 +141,7 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
             return;
           }
         }
+        // AI returned null or unparseable — fall through to rule-based
       } catch (err) {
         if (err.name === 'AbortError') return;
         console.warn('AI coaching failed, falling back to rule-based:', err.message);
@@ -148,8 +149,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       setLoading(false);
     }
 
-    // Fallback: rule-based coaching
-    const prompt = getGhostPrompt(currentSection.title, sectionText, '');
+    // Always fall back to rule-based coaching
+    const prompt = getGhostPrompt(currentSection.title, sectionText, doc?.title || '');
     if (prompt) {
       setCoaching({ question: prompt.question, recommendation: prompt.recommendation });
       setGhostRec(prompt.recommendation);
@@ -171,7 +172,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
 
     // Proactively trigger coaching when entering a new section
     if (currentSection) {
-      const timer = setTimeout(() => triggerRef.current(), 400);
+      // Fire quickly so coaching appears right away
+      const timer = setTimeout(() => triggerRef.current(), 200);
       return () => clearTimeout(timer);
     }
   }, [currentSection?.title]);
@@ -184,7 +186,12 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
     }
 
     const section = templateInfo.sections[currentSection.index];
-    if (!section) return;
+    if (!section) {
+      setTemplateExample(null);
+      return;
+    }
+
+    const placeholder = section.placeholder || `Write your ${currentSection.title} here.`;
 
     // Check cache first
     const cacheKey = `${doc?.type}::${currentSection.title}`;
@@ -193,13 +200,15 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       return;
     }
 
-    // If AI is not enabled, use the placeholder text as a fallback guide
+    // Always set placeholder immediately so something is visible right away
+    setTemplateExample(placeholder);
+
+    // If AI is not enabled, we're done — placeholder is already set
     if (!isAiEnabled()) {
-      setTemplateExample(section.placeholder || null);
       return;
     }
 
-    // Fetch AI-generated example
+    // Fetch AI-generated example to replace the placeholder
     if (exampleAbortRef.current) exampleAbortRef.current.abort();
     const controller = new AbortController();
     exampleAbortRef.current = controller;
@@ -216,15 +225,13 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
         if (result) {
           exampleCacheRef.current[cacheKey] = result;
           setTemplateExample(result);
-        } else {
-          // AI returned nothing — use placeholder as fallback
-          setTemplateExample(section.placeholder || null);
         }
+        // If AI returned nothing, placeholder is already showing
       })
       .catch((err) => {
         if (err.name === 'AbortError') return;
         console.warn('Template example failed:', err.message);
-        setTemplateExample(section.placeholder || null);
+        // Placeholder is already showing — no action needed
       })
       .finally(() => {
         if (!controller.signal.aborted) setExampleLoading(false);

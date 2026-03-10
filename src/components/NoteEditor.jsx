@@ -19,6 +19,44 @@ const NoteEditor = forwardRef(function NoteEditor({ doc, onUpdate, onCursorChang
   }), []);
 
   const isLocked = !doc || !doc.type;
+  const prevDocIdRef = useRef(null);
+
+  // Auto-place cursor after first H2 when doc loads with a template
+  useEffect(() => {
+    const ed = editorRef.current;
+    if (!ed || !doc?.type || !doc?.content) return;
+
+    // Only run once per doc (when doc ID changes or type is first set)
+    const docKey = `${doc.id}::${doc.type}`;
+    if (prevDocIdRef.current === docKey) return;
+    prevDocIdRef.current = docKey;
+
+    // Wait for TipTap to render the content
+    requestAnimationFrame(() => {
+      const { state } = ed;
+      let targetPos = null;
+
+      // Find the first paragraph after the first H2
+      state.doc.descendants((node, pos) => {
+        if (targetPos !== null) return false; // stop after finding first match
+        if (node.type.name === 'heading' && node.attrs.level === 2) {
+          // Set target to after the heading (next node position)
+          targetPos = pos + node.nodeSize;
+          return false;
+        }
+      });
+
+      if (targetPos !== null && targetPos <= state.doc.content.size) {
+        // Place cursor at the start of the paragraph after the first H2
+        try {
+          ed.commands.focus();
+          ed.commands.setTextSelection(targetPos + 1);
+        } catch {
+          // Ignore position errors
+        }
+      }
+    });
+  }, [doc?.id, doc?.type, doc?.content]);
 
   // Handle content updates from TipTap
   const handleUpdate = useCallback((json, text) => {

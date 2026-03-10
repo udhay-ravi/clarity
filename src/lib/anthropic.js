@@ -23,29 +23,43 @@ export async function callClaude({ system, userMessage, maxTokens = 60, signal }
     return null;
   }
 
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens,
-      system,
-      messages: [{ role: 'user', content: userMessage }],
-    }),
-    signal,
-  });
+  // Create an abort controller with timeout to prevent hanging requests
+  const timeoutMs = 15000;
+  const timeoutId = setTimeout(() => {
+    if (signal && !signal.aborted) {
+      console.warn('Clarity: API call timed out after', timeoutMs, 'ms');
+    }
+  }, timeoutMs);
 
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: maxTokens,
+        system,
+        messages: [{ role: 'user', content: userMessage }],
+      }),
+      signal,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      console.warn('Clarity API error:', response.status, errorText.slice(0, 200));
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.content?.[0]?.text?.trim() || null;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await response.json();
-  return data.content?.[0]?.text?.trim() || null;
 }
 
 export async function getGhostText({ sectionTitle, documentType, prefaceContext, userText, coveredDimensions, missingDimensions, signal }) {
