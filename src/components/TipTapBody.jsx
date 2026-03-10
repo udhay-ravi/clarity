@@ -11,7 +11,7 @@ import { compressImageToDataUrl } from '../lib/imageUtils';
 import './TipTapBody.css';
 
 const TipTapBody = forwardRef(function TipTapBody(
-  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand, onGenCommand },
+  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand, onGenCommand, onCreated, editable = true },
   ref
 ) {
   const suppressUpdateRef = useRef(false);
@@ -19,11 +19,13 @@ const TipTapBody = forwardRef(function TipTapBody(
   searchCbRef.current = onSearchCommand;
   const genCbRef = useRef(onGenCommand);
   genCbRef.current = onGenCommand;
+  const placeholderRef = useRef(placeholder);
+  placeholderRef.current = placeholder;
 
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false, // section titles handle headings
+        heading: { levels: [2, 3] },
       }),
       Image.configure({
         inline: false,
@@ -38,9 +40,10 @@ const TipTapBody = forwardRef(function TipTapBody(
       TableCell,
       TableHeader,
       Placeholder.configure({
-        placeholder: placeholder || 'Start writing...',
+        placeholder: () => placeholderRef.current || 'Start writing...',
       }),
     ],
+    editable,
     content: content || { type: 'doc', content: [{ type: 'paragraph' }] },
     onUpdate: ({ editor: ed }) => {
       if (suppressUpdateRef.current) return;
@@ -113,6 +116,13 @@ const TipTapBody = forwardRef(function TipTapBody(
   // Expose editor instance to parent
   useImperativeHandle(ref, () => editor, [editor]);
 
+  // Notify parent when editor is created
+  const createdCbRef = useRef(onCreated);
+  createdCbRef.current = onCreated;
+  useEffect(() => {
+    if (editor) createdCbRef.current?.(editor);
+  }, [editor]);
+
   // Selection update listener — uses ref to avoid stale closures
   const selectionCbRef = useRef(onSelectionUpdate);
   selectionCbRef.current = onSelectionUpdate;
@@ -142,16 +152,18 @@ const TipTapBody = forwardRef(function TipTapBody(
     }
   }, [content, editor]);
 
-  // Update placeholder when it changes
+  // Update editable state
   useEffect(() => {
     if (!editor) return;
-    editor.extensionManager.extensions.forEach((ext) => {
-      if (ext.name === 'placeholder') {
-        ext.options.placeholder = placeholder || 'Start writing...';
-        // Force editor to re-render placeholder
-        editor.view.dispatch(editor.state.tr);
-      }
-    });
+    editor.setEditable(editable);
+  }, [editable, editor]);
+
+  // Force placeholder re-render when it changes
+  useEffect(() => {
+    if (!editor) return;
+    // The placeholder function reads from placeholderRef, so we just need to
+    // force ProseMirror to re-evaluate decorations
+    editor.view.dispatch(editor.state.tr);
   }, [placeholder, editor]);
 
   if (!editor) return null;

@@ -71,9 +71,102 @@
   z-index: 1;
 }
 
+/* Headings */
+.tiptap-body-editor h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
+
+.tiptap-body-editor h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+}
+
 /* Paragraphs — remove default margins from ProseMirror */
 .tiptap-body-editor p {
   margin: 0;
+}
+
+/* Lists */
+.tiptap-body-editor ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap-body-editor ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap-body-editor li {
+  margin: 0.25rem 0;
+}
+
+.tiptap-body-editor li p {
+  margin: 0;
+}
+
+/* Blockquote */
+.tiptap-body-editor blockquote {
+  border-left: 3px solid var(--color-amber);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  color: var(--color-ghost);
+  font-style: italic;
+}
+
+/* Inline code */
+.tiptap-body-editor code {
+  background: var(--color-sidebar-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 0.88em;
+}
+
+/* Code block */
+.tiptap-body-editor pre {
+  background: var(--color-sidebar-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+
+.tiptap-body-editor pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* Horizontal rule */
+.tiptap-body-editor hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5rem 0;
+}
+
+/* Strikethrough */
+.tiptap-body-editor s {
+  text-decoration: line-through;
+  opacity: 0.6;
 }
 
 /* Selection color */

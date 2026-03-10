@@ -9,6 +9,8 @@
  * new index does not, the draft is migrated into the new structure automatically.
  */
 
+import { sectionsToSingleDoc, tipTapDocToText } from './contentModel';
+
 const INDEX_KEY = 'clarity-docs-index';
 const DOC_PREFIX = 'clarity-doc-';
 const LEGACY_KEY = 'clarity-draft';
@@ -47,7 +49,10 @@ export function saveIndex(index) {
 export function loadDocument(id) {
   try {
     const raw = localStorage.getItem(DOC_PREFIX + id);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const doc = JSON.parse(raw);
+      return migrateDocV2(doc);
+    }
   } catch (e) {
     console.warn('Failed to load document:', e);
   }
@@ -70,9 +75,15 @@ export function saveDocument(doc) {
 
   // Update index metadata
   const index = loadIndex();
-  const wordCount = (doc.sections || []).reduce((n, s) => {
-    return n + (s.body || '').split(/\s+/).filter(Boolean).length;
-  }, 0);
+  // V2: word count from body string; V1 fallback from sections
+  let wordCount = 0;
+  if (doc.body != null) {
+    wordCount = (doc.body || '').split(/\s+/).filter(Boolean).length;
+  } else {
+    wordCount = (doc.sections || []).reduce((n, s) => {
+      return n + (s.body || '').split(/\s+/).filter(Boolean).length;
+    }, 0);
+  }
 
   const entry = index.docs.find((d) => d.id === doc.id);
   if (entry) {
@@ -200,6 +211,48 @@ export function assignDocToProject(docId, projectId) {
     saveIndex(index);
   }
   return index;
+}
+
+// ---------------------------------------------------------------------------
+// V2 helpers: single-body note format
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a blank note in V2 format (single TipTap body, no sections).
+ */
+export function createBlankNote() {
+  return {
+    title: 'Untitled',
+    type: null,
+    content: { type: 'doc', content: [{ type: 'paragraph' }] },
+    body: '',
+  };
+}
+
+/**
+ * Lazy-migrate a V1 sectioned document to V2 single-body format.
+ * If the doc already has `content` (TipTap JSON) and no `sections`, it's V2.
+ */
+export function migrateDocV2(doc) {
+  if (!doc) return doc;
+  // Already V2
+  if (doc.content && !doc.sections) return doc;
+  // Has sections → migrate
+  if (doc.sections) {
+    const content = sectionsToSingleDoc(doc.sections, doc.preface);
+    const body = tipTapDocToText(content);
+    const migrated = { ...doc, content, body };
+    // Remove old fields
+    delete migrated.sections;
+    delete migrated.preface;
+    return migrated;
+  }
+  // Edge case: no sections AND no content
+  return {
+    ...doc,
+    content: { type: 'doc', content: [{ type: 'paragraph' }] },
+    body: '',
+  };
 }
 
 // ---------------------------------------------------------------------------
