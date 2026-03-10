@@ -1,10 +1,12 @@
-import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useState, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import TipTapBody from './TipTapBody';
+import EditorToolbar from './EditorToolbar';
 import { tipTapDocToText } from '../lib/contentModel';
 
 const NoteEditor = forwardRef(function NoteEditor({ doc, onUpdate, onCursorChange, templateInfo }, ref) {
   const editorRef = useRef(null);
   const ghostTextRef = useRef(null);
+  const [editor, setEditor] = useState(null);
 
   // Expose editor ref to parent (Workspace → AiCoachPane)
   useImperativeHandle(ref, () => ({
@@ -73,6 +75,9 @@ const NoteEditor = forwardRef(function NoteEditor({ doc, onUpdate, onCursorChang
 
   return (
     <div className="w-full max-w-3xl px-8 py-8">
+      {/* Formatting toolbar — only when editor is active */}
+      {!isLocked && <EditorToolbar editor={editor} />}
+
       {/* Editor area */}
       <div className="relative">
         {isLocked && (
@@ -96,6 +101,7 @@ const NoteEditor = forwardRef(function NoteEditor({ doc, onUpdate, onCursorChang
           onSelectionUpdate={handleSelectionUpdate}
           onSearchCommand={handleSearchCommand}
           onGenCommand={handleGenCommand}
+          onCreated={setEditor}
           editable={!isLocked}
         />
       </div>

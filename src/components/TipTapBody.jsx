@@ -11,7 +11,7 @@ import { compressImageToDataUrl } from '../lib/imageUtils';
 import './TipTapBody.css';
 
 const TipTapBody = forwardRef(function TipTapBody(
-  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand, onGenCommand, editable = true },
+  { content, placeholder, onUpdate, onFocus, onBlur, onKeyDown, onSelectionUpdate, onSearchCommand, onGenCommand, onCreated, editable = true },
   ref
 ) {
   const suppressUpdateRef = useRef(false);
@@ -115,6 +115,13 @@ const TipTapBody = forwardRef(function TipTapBody(
 
   // Expose editor instance to parent
   useImperativeHandle(ref, () => editor, [editor]);
+
+  // Notify parent when editor is created
+  const createdCbRef = useRef(onCreated);
+  createdCbRef.current = onCreated;
+  useEffect(() => {
+    if (editor) createdCbRef.current?.(editor);
+  }, [editor]);
 
   // Selection update listener — uses ref to avoid stale closures
   const selectionCbRef = useRef(onSelectionUpdate);
