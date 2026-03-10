@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { TEMPLATES } from '../lib/templates';
 import { useAiCoach } from '../hooks/useAiCoach';
+import { hasCustomTemplatesForType } from '../lib/customTemplates';
 
 const TYPE_LABELS = {
   prd: 'PRD', prfaq: 'PRFAQ', onePager: 'One-Pager', launchBrief: 'Launch Brief',
@@ -18,7 +19,7 @@ const TEMPLATE_ICONS = {
   productPitch: '\uD83C\uDFA4', packagingRecommendation: '\uD83D\uDCE6',
 };
 
-export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorInfo, onSelectType, editorRef }) {
+export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorInfo, onSelectType, onDocUpdate, editorRef }) {
   const {
     sectionOutline,
     currentSection,
@@ -31,6 +32,17 @@ export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorI
     acceptGhost,
     dismissGhost,
   } = useAiCoach({ doc, templateInfo, currentHeading, cursorInfo });
+
+  // Check if custom templates exist for this doc type
+  const hasCustomTemplates = useMemo(
+    () => doc?.type ? hasCustomTemplatesForType(doc.type) : false,
+    [doc?.type]
+  );
+
+  const guidanceMode = doc?.guidanceMode || 'both';
+  const handleGuidanceChange = useCallback((mode) => {
+    if (onDocUpdate) onDocUpdate({ ...doc, guidanceMode: mode });
+  }, [doc, onDocUpdate]);
 
   // Handle Tab to accept recommendation
   const handleAcceptGhost = useCallback(() => {
@@ -86,6 +98,32 @@ export default function AiCoachPane({ doc, templateInfo, currentHeading, cursorI
           &#9998; change
         </button>
       </div>
+
+      {/* Guidance mode selector — only when custom templates exist */}
+      {hasCustomTemplates && (
+        <div className="mb-4 p-2.5 bg-surface rounded-lg border border-border">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-ghost mb-2">AI uses your templates for</p>
+          <div className="flex gap-1">
+            {[
+              { id: 'structure', label: 'Structure' },
+              { id: 'content', label: 'Content' },
+              { id: 'both', label: 'Both' },
+            ].map((m) => (
+              <button
+                key={m.id}
+                onClick={() => handleGuidanceChange(m.id)}
+                className={`flex-1 text-[10px] font-medium py-1 px-1.5 rounded transition-colors cursor-pointer ${
+                  guidanceMode === m.id
+                    ? 'bg-amber/15 text-amber border border-amber/30'
+                    : 'text-ghost hover:text-text border border-transparent'
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Section outline */}
       <div className="mb-4">

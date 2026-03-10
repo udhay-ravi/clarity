@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Type, ALargeSmall, Sun, Moon, Monitor } from 'lucide-react';
+import { X, Cpu, Sparkles, Eye, EyeOff, RefreshCw, Loader2, ChevronDown, Ban, Check, Download, Server, Package, Trash2, Shield, Type, ALargeSmall, Sun, Moon, Monitor, Upload, FileText, Plus } from 'lucide-react';
 import { getProvider, setProvider, getApiKey, setApiKey, hasApiKey, getOpenAIKey, setOpenAIKey, hasOpenAIKey, checkOllama, listModels, getOllamaModel, setOllamaModel, isElectronApp, ensureOllamaReady } from '../lib/ai-provider';
+import { TEMPLATES } from '../lib/templates';
+import {
+  loadCustomTemplateIndex,
+  loadCustomTemplate,
+  saveCustomTemplate,
+  deleteCustomTemplate,
+  getCustomTemplateStorageUsage,
+} from '../lib/customTemplates';
 
 // ── Persisted editor preferences ──────────────────────────────────
 const PREFS_KEY = 'clarity-editor-prefs';
@@ -181,6 +189,7 @@ export default function SettingsModal({ onClose }) {
 
   const tabs = [
     { id: 'ai', label: 'AI Provider' },
+    { id: 'templates', label: 'Templates' },
     { id: 'editor', label: 'Editor' },
     { id: 'about', label: 'About' },
   ];
@@ -364,6 +373,9 @@ export default function SettingsModal({ onClose }) {
               </p>
             </div>
           )}
+
+          {/* ═══════ Templates Tab ═══════ */}
+          {tab === 'templates' && <CustomTemplatesTab />}
 
           {/* ═══════ Editor Tab ═══════ */}
           {tab === 'editor' && (
@@ -565,6 +577,182 @@ function ModelSelector({ models, selectedModel, onSelectModel }) {
         ))}
       </select>
       <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-ghost pointer-events-none" />
+    </div>
+  );
+}
+
+// ── Custom Templates Tab ─────────────────────────────────────────
+
+const TYPE_OPTIONS = Object.entries(TEMPLATES).map(([key, tmpl]) => ({ value: key, label: tmpl.name }));
+
+function CustomTemplatesTab() {
+  const [templates, setTemplates] = useState(() => loadCustomTemplateIndex());
+  const [usage, setUsage] = useState(() => getCustomTemplateStorageUsage());
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState('');
+  const [templateType, setTemplateType] = useState(TYPE_OPTIONS[0]?.value || 'prd');
+  const [content, setContent] = useState('');
+  const [error, setError] = useState(null);
+  const fileRef = useRef(null);
+
+  const refresh = () => {
+    setTemplates(loadCustomTemplateIndex());
+    setUsage(getCustomTemplateStorageUsage());
+  };
+
+  const handleSave = () => {
+    setError(null);
+    const result = saveCustomTemplate({ name, templateType, content });
+    if (!result.success) {
+      setError(result.message);
+      return;
+    }
+    setShowForm(false);
+    setName('');
+    setContent('');
+    refresh();
+  };
+
+  const handleDelete = (id) => {
+    deleteCustomTemplate(id);
+    refresh();
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setContent(ev.target?.result || '');
+      if (!name) setName(file.name.replace(/\.(txt|md|markdown)$/i, ''));
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  // Empty state
+  if (templates.length === 0 && !showForm) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <FileText size={28} className="text-ghost/40 mb-3" />
+        <p className="text-sm font-[var(--font-ui)] text-text mb-1">No custom templates yet</p>
+        <p className="text-xs font-[var(--font-ui)] text-ghost mb-4 max-w-[240px]">
+          Upload example documents to help AI learn your writing style and structure.
+        </p>
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center gap-1.5 px-4 py-2 bg-amber text-white text-xs font-[var(--font-ui)] font-medium rounded-lg hover:bg-amber/90 transition-colors cursor-pointer"
+        >
+          <Plus size={14} /> Add your first template
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Header + usage */}
+      <div className="flex items-center justify-between">
+        <div>
+          <span className="text-xs font-semibold font-[var(--font-ui)] text-text uppercase tracking-wider">Custom Templates</span>
+          <span className="text-[10px] font-[var(--font-ui)] text-ghost ml-2">
+            {usage.count}/{usage.maxCount} &middot; {Math.round(usage.totalBytes / 1000)}/{Math.round(usage.maxBytes / 1000)} KB
+          </span>
+        </div>
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-[var(--font-ui)] font-medium text-amber border border-amber/30 rounded-md hover:bg-amber/10 transition-colors cursor-pointer"
+          >
+            <Plus size={10} /> Add
+          </button>
+        )}
+      </div>
+
+      {/* Add form */}
+      {showForm && (
+        <div className="border border-amber/30 rounded-lg p-3 bg-amber/5 space-y-2.5">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Template name (e.g. My PRD Style)"
+            className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-1.5 outline-none focus:border-amber transition-colors"
+          />
+          <div className="relative">
+            <select
+              value={templateType}
+              onChange={(e) => setTemplateType(e.target.value)}
+              className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-1.5 pr-7 outline-none focus:border-amber transition-colors appearance-none cursor-pointer"
+            >
+              {TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+            <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-ghost pointer-events-none" />
+          </div>
+          <div className="relative">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Paste your document text here..."
+              rows={5}
+              className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-2 resize-y outline-none focus:border-amber transition-colors min-h-[80px]"
+            />
+            <span className="absolute bottom-2 right-2 text-[9px] font-[var(--font-ui)] text-ghost/50">
+              {content.length.toLocaleString()} / 50,000
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="flex items-center gap-1 text-[10px] font-[var(--font-ui)] text-ghost hover:text-amber transition-colors cursor-pointer"
+            >
+              <Upload size={10} /> Upload .txt / .md
+            </button>
+            <input ref={fileRef} type="file" accept=".txt,.md,.markdown" className="hidden" onChange={handleFileUpload} />
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setShowForm(false); setError(null); setName(''); setContent(''); }}
+                className="px-3 py-1 text-[10px] font-[var(--font-ui)] text-ghost hover:text-text transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-3 py-1 bg-amber text-white text-[10px] font-[var(--font-ui)] font-medium rounded-md hover:bg-amber/90 transition-colors cursor-pointer"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+          {error && <p className="text-[10px] font-[var(--font-ui)] text-red-500">{error}</p>}
+        </div>
+      )}
+
+      {/* Template list */}
+      <div className="space-y-2 max-h-[200px] overflow-y-auto">
+        {templates.map((tpl) => (
+          <div key={tpl.id} className="flex items-start gap-2 p-2.5 border border-border rounded-lg bg-surface">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-medium font-[var(--font-ui)] text-text truncate">{tpl.name}</span>
+                <span className="text-[9px] font-[var(--font-ui)] px-1.5 py-0.5 rounded bg-amber/15 text-amber uppercase shrink-0">
+                  {TEMPLATES[tpl.templateType]?.name || tpl.templateType}
+                </span>
+              </div>
+              <p className="text-[10px] font-[var(--font-ui)] text-ghost mt-0.5 truncate">
+                {Math.round((tpl.contentLength || 0) / 1000)}K chars
+              </p>
+            </div>
+            <button
+              onClick={() => handleDelete(tpl.id)}
+              className="p-1 text-ghost hover:text-red-500 transition-colors cursor-pointer shrink-0"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

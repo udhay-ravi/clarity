@@ -7,6 +7,7 @@ import {
   getSectionDimensionCount,
 } from '../lib/ghostPrompts';
 import { getGhostText, getTemplateExample, isAiEnabled } from '../lib/ai-provider';
+import { getCustomTemplatesForType } from '../lib/customTemplates';
 
 /**
  * AI Coach hook — detects headings, tracks dimensions, provides sentence-level coaching.
@@ -45,6 +46,23 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
         filled: bodyLower.includes(s.title.toLowerCase()),
       }));
   }, [templateInfo, doc?.body]);
+
+  // ── Build custom template context for AI prompts ──
+  const customTemplateContext = useMemo(() => {
+    if (!doc?.type) return null;
+    const templates = getCustomTemplatesForType(doc.type);
+    if (!templates?.length) return null;
+    const MAX = 8000;
+    let context = '';
+    for (const tpl of templates) {
+      const entry = `### ${tpl.name}\n${tpl.content}\n\n`;
+      if (context.length + entry.length > MAX) break;
+      context += entry;
+    }
+    return context.trim() || null;
+  }, [doc?.type]);
+
+  const guidanceMode = doc?.guidanceMode || 'both';
 
   // ── Match current heading to a template section ──
   const currentSection = useMemo(() => {
@@ -133,6 +151,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
           userText: sectionText,
           coveredDimensions: coverage.covered || [],
           missingDimensions: coverage.missing || [],
+          customTemplateContext,
+          guidanceMode,
           signal: controller.signal,
         });
 
@@ -171,7 +191,7 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       setCoaching(null);
       setGhostRec(null);
     }
-  }, [currentSection, doc?.body, doc?.type, doc?.title]);
+  }, [currentSection, doc?.body, doc?.type, doc?.title, customTemplateContext, guidanceMode]);
 
   // ── Clear coaching when section changes — then proactively trigger ──
   const triggerRef = useRef(triggerCoaching);
@@ -206,8 +226,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
 
     const placeholder = section.placeholder || `Write your ${currentSection.title} here.`;
 
-    // Check cache first
-    const cacheKey = `${doc?.type}::${currentSection.title}`;
+    // Check cache first (include context length so cache invalidates when templates change)
+    const cacheKey = `${doc?.type}::${currentSection.title}::${customTemplateContext?.length || 0}`;
     if (exampleCacheRef.current[cacheKey]) {
       setTemplateExample(exampleCacheRef.current[cacheKey]);
       return;
@@ -231,6 +251,8 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       sectionTitle: currentSection.title,
       templateStructure: section.placeholder || currentSection.title,
       prefaceContext: doc?.title || 'A B2B SaaS product',
+      customTemplateContext,
+      guidanceMode,
       signal: controller.signal,
     })
       .then((result) => {
@@ -251,7 +273,7 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
       });
 
     return () => controller.abort();
-  }, [currentSection?.title, currentSection?.index, templateInfo, doc?.type, doc?.title]);
+  }, [currentSection?.title, currentSection?.index, templateInfo, doc?.type, doc?.title, customTemplateContext, guidanceMode]);
 
   // ── Accept ghost recommendation ──
   const acceptGhost = useCallback(() => {

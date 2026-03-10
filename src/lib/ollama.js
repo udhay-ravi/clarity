@@ -113,7 +113,19 @@ async function callOllama({ system, userMessage, maxTokens = 60, temperature = 0
 
 // ── Domain functions (mirror anthropic.js signatures + prompts) ───
 
-export async function getGhostText({ sectionTitle, documentType, prefaceContext, userText, coveredDimensions, missingDimensions, signal }) {
+// ── Guidance-aware custom template context builder (truncated for local models) ──
+function buildCustomContext(customTemplateContext, guidanceMode) {
+  if (!customTemplateContext) return '';
+  const truncated = customTemplateContext.slice(0, 2000); // Ollama: smaller context window
+  const GUIDANCE = {
+    structure: 'Use these ONLY as structural reference. Match section organization and format. Generate completely original content.',
+    content: 'Use these as content reference. Recommend sentences, ideas, and data points from them. Don\'t enforce their structure.',
+    both: 'Match the structure, style, tone, and content patterns from these examples.',
+  };
+  return `\nReference from user's previous documents:\n---\n${truncated}\n---\n${GUIDANCE[guidanceMode || 'both']}`;
+}
+
+export async function getGhostText({ sectionTitle, documentType, prefaceContext, userText, coveredDimensions, missingDimensions, customTemplateContext, guidanceMode, signal }) {
   const system = `You are a writing assistant for product managers. You help them think, then suggest what to write.
 
 Return EXACTLY two lines:
@@ -126,6 +138,7 @@ Rules:
 - Use the document context (product name, value prop, etc.) to make both Q and R specific and relevant.
 - Focus on the most important missing structural element.
 - Acknowledge what they have covered — don't repeat it.
+- If reference examples are provided, follow the guidance instruction about how to use them.
 - Tone: smart, direct, collegial.
 - Return ONLY the two lines starting with Q: and R: — no preamble, no explanation.`;
 
@@ -133,8 +146,9 @@ Rules:
   const structureLine = coveredDimensions && missingDimensions
     ? `\nStructural elements covered: ${coveredDimensions.length > 0 ? coveredDimensions.join(', ') : 'none'}. Still missing: ${missingDimensions.length > 0 ? missingDimensions.join(', ') : 'none (section complete)'}.`
     : '';
+  const customCtx = buildCustomContext(customTemplateContext, guidanceMode);
   const userMessage = `Section: ${sectionTitle || 'Untitled'}
-Document type: ${documentType || 'General'}${contextLine}${structureLine}
+Document type: ${documentType || 'General'}${contextLine}${structureLine}${customCtx}
 What the user has written so far in this section: ${userText || '(empty)'}
 
 Give me the Q and R for the next ghost text focusing on the most important missing element.`;
@@ -142,7 +156,7 @@ Give me the Q and R for the next ghost text focusing on the most important missi
   return callOllama({ system, userMessage, maxTokens: 120, temperature: 0.7, signal });
 }
 
-export async function getTemplateExample({ sectionTitle, templateStructure, prefaceContext, signal }) {
+export async function getTemplateExample({ sectionTitle, templateStructure, prefaceContext, customTemplateContext, guidanceMode, signal }) {
   const system = `You are a PM writing assistant. Given a section template with [bracket placeholders] and product context, generate a realistic filled-in example showing what a strong version of this section looks like.
 
 Rules:
@@ -150,13 +164,15 @@ Rules:
 - Keep the same structure and line breaks as the template.
 - Use concrete numbers, names, and details — not generic filler.
 - Do NOT include brackets — replace them entirely with real content.
+- If the user has provided example documents, follow the guidance instruction about how to use them.
 - Maximum 4-5 lines, concise.
 - Return ONLY the example text, no preamble.`;
 
+  const customCtx = buildCustomContext(customTemplateContext, guidanceMode);
   const userMessage = `Product context: ${prefaceContext || 'A B2B SaaS product'}
 Section: ${sectionTitle}
 Template:
-${templateStructure}
+${templateStructure}${customCtx}
 
 Generate a filled-in example.`;
 

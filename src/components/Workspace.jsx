@@ -239,6 +239,14 @@ export default function Workspace({ user, authEnabled, onSignOut, onGoToLanding 
     });
   }, []);
 
+  // ── Guidance mode update from AiCoachPane ──
+  const handleMetaUpdate = useCallback((updatedDoc) => {
+    setActiveDoc((prev) => {
+      if (!prev || prev.id !== updatedDoc?.id) return prev;
+      return { ...prev, guidanceMode: updatedDoc.guidanceMode };
+    });
+  }, []);
+
   // ── Cursor/heading tracking from editor ──
   const handleCursorChange = useCallback((info) => {
     setCurrentHeading(info?.heading || null);
@@ -342,6 +350,7 @@ export default function Workspace({ user, authEnabled, onSignOut, onGoToLanding 
             currentHeading={currentHeading}
             cursorInfo={cursorInfo}
             onSelectType={handleTypeChange}
+            onDocUpdate={handleMetaUpdate}
             editorRef={editorRef}
           />
         )}
