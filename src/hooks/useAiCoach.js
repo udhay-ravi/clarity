@@ -48,17 +48,30 @@ export function useAiCoach({ doc, templateInfo, currentHeading, cursorInfo, debo
 
   // ── Match current heading to a template section ──
   const currentSection = useMemo(() => {
-    if (!currentHeading || !templateInfo?.sections) return null;
-    const headingLower = currentHeading.toLowerCase().trim();
-    const idx = templateInfo.sections.findIndex(
-      (s) => s.title && s.title.toLowerCase().trim() === headingLower
-    );
-    if (idx >= 0) return { title: templateInfo.sections[idx].title, index: idx };
-    // Fuzzy: check if heading contains section title
-    const fuzzyIdx = templateInfo.sections.findIndex(
-      (s) => s.title && headingLower.includes(s.title.toLowerCase().trim())
-    );
-    if (fuzzyIdx >= 0) return { title: templateInfo.sections[fuzzyIdx].title, index: fuzzyIdx };
+    if (!templateInfo?.sections) return null;
+
+    // If we have a detected heading, match it to a section
+    if (currentHeading) {
+      const headingLower = currentHeading.toLowerCase().trim();
+      const idx = templateInfo.sections.findIndex(
+        (s) => s.title && s.title.toLowerCase().trim() === headingLower
+      );
+      if (idx >= 0) return { title: templateInfo.sections[idx].title, index: idx };
+      // Fuzzy: check if heading contains section title
+      const fuzzyIdx = templateInfo.sections.findIndex(
+        (s) => s.title && headingLower.includes(s.title.toLowerCase().trim())
+      );
+      if (fuzzyIdx >= 0) return { title: templateInfo.sections[fuzzyIdx].title, index: fuzzyIdx };
+    }
+
+    // Default to first section when template is selected but no heading detected
+    // (e.g., doc just opened, cursor at position 0)
+    const firstSection = templateInfo.sections.find((s) => s.title);
+    if (firstSection) {
+      const firstIdx = templateInfo.sections.indexOf(firstSection);
+      return { title: firstSection.title, index: firstIdx };
+    }
+
     return null;
   }, [currentHeading, templateInfo]);
 
