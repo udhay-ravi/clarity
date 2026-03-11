@@ -30,6 +30,7 @@ export default function WorkspaceToolbar({
   onExportAll,
   onOpenSettings,
   onSignOut,
+  onGoToLanding,
   user,
 }) {
   const [exportOpen, setExportOpen] = useState(false);
@@ -55,7 +56,13 @@ export default function WorkspaceToolbar({
         >
           &#9776;
         </button>
-        <span className="text-sm font-semibold text-amber tracking-tight">Clarity</span>
+        <button
+          onClick={onGoToLanding}
+          className="text-sm font-semibold text-amber tracking-tight hover:text-amber/80 transition-colors cursor-pointer"
+          title="Go to home"
+        >
+          Clarity
+        </button>
       </div>
 
       {/* Center */}

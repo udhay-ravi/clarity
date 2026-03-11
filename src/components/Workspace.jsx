@@ -310,6 +310,7 @@ export default function Workspace({ user, authEnabled, onSignOut, onGoToLanding 
         onExportAll={handleExportAll}
         onOpenSettings={() => setShowSettings(true)}
         onSignOut={authEnabled ? onSignOut : null}
+        onGoToLanding={onGoToLanding}
         user={user}
       />
 

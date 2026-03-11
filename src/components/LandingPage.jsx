@@ -20,14 +20,17 @@ export default function LandingPage({ onGetStarted, authEnabled }) {
     <div className="min-h-screen bg-bg">
       {/* ── Nav ── */}
       <nav className="flex items-center justify-between px-8 py-5 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2.5">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <div className="w-8 h-8 rounded-lg bg-amber flex items-center justify-center">
             <PenLine size={18} className="text-white" strokeWidth={2.5} />
           </div>
           <span className="font-[var(--font-ui)] text-lg font-bold tracking-tight text-text">
             Clarity
           </span>
-        </div>
+        </button>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <button
@@ -208,14 +211,17 @@ export default function LandingPage({ onGetStarted, authEnabled }) {
       {/* ── Footer ── */}
       <footer className="px-8 py-8 max-w-5xl mx-auto border-t border-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <div className="w-5 h-5 rounded bg-amber/80 flex items-center justify-center">
               <PenLine size={11} className="text-white" strokeWidth={2.5} />
             </div>
             <span className="font-[var(--font-ui)] text-xs font-semibold text-ghost">
               Clarity
             </span>
-          </div>
+          </button>
           <p className="text-xs font-[var(--font-ui)] text-ghost/60">
             PM thinking assistant &middot; Built with React &amp; Vite
           </p>

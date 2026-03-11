@@ -66,10 +66,13 @@ export default function AuthScreen({
           <ThemeToggle />
         </div>
         <div className="w-full max-w-sm text-center animate-fade-in">
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center justify-center gap-2 mb-8 mx-auto cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <PenLine size={28} className="text-amber" />
             <span className="text-2xl font-bold font-[var(--font-ui)] text-text">Clarity</span>
-          </div>
+          </button>
           <div className="bg-surface border border-border rounded-xl p-8">
             <div className="text-4xl mb-4">&#9993;</div>
             <h2 className="text-lg font-semibold font-[var(--font-ui)] text-text mb-2">Check your email</h2>
@@ -105,10 +108,13 @@ export default function AuthScreen({
 
       <div className="w-full max-w-sm animate-fade-in">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <button
+          onClick={onBack}
+          className="flex items-center justify-center gap-2 mb-8 mx-auto cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <PenLine size={28} className="text-amber" />
           <span className="text-2xl font-bold font-[var(--font-ui)] text-text">Clarity</span>
-        </div>
+        </button>
 
         {/* Heading */}
         <h1 className="text-xl font-bold font-[var(--font-ui)] text-text text-center mb-8">
