@@ -227,7 +227,7 @@ export default function SettingsModal({ onClose }) {
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5 min-h-[280px]">
+        <div className="px-6 py-5 min-h-[280px] max-h-[calc(100vh-220px)] overflow-y-auto">
 
           {/* ═══════ AI Provider Tab ═══════ */}
           {tab === 'ai' && (
@@ -621,10 +621,24 @@ function CustomTemplatesTab() {
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Reject files > 100 KB to prevent freezing
+    if (file.size > 100_000) {
+      setError('File too large (max 100 KB). Paste the text directly or use a smaller file.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setContent(ev.target?.result || '');
-      if (!name) setName(file.name.replace(/\.(txt|md|markdown)$/i, ''));
+      try {
+        const text = (ev.target?.result || '').slice(0, 50_000);
+        setContent(text);
+        if (!name) setName(file.name.replace(/\.(txt|md|markdown)$/i, ''));
+      } catch {
+        setError('Failed to read file.');
+      }
+    };
+    reader.onerror = () => {
+      setError('Failed to read file.');
     };
     reader.readAsText(file);
     e.target.value = '';
@@ -696,7 +710,8 @@ function CustomTemplatesTab() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Paste your document text here..."
               rows={5}
-              className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-2 resize-y outline-none focus:border-amber transition-colors min-h-[80px]"
+              maxLength={50000}
+              className="w-full text-xs font-[var(--font-ui)] text-text bg-surface border border-border rounded-md px-3 py-2 resize-y outline-none focus:border-amber transition-colors min-h-[80px] max-h-[180px]"
             />
             <span className="absolute bottom-2 right-2 text-[9px] font-[var(--font-ui)] text-ghost/50">
               {content.length.toLocaleString()} / 50,000
